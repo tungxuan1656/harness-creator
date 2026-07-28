@@ -1,92 +1,44 @@
 ---
 name: brainstorming
-description: Use for deeper structured exploration when initial thinking reveals ambiguity, competing approaches, unclear acceptance criteria, or product/design/architecture tradeoffs. Do not use for every task.
+description: Structured exploration when initial thinking reveals ambiguity, competing approaches, unclear acceptance criteria, or meaningful tradeoffs. Do not use for every task.
 ---
 
 # Brainstorming
 
-Use this skill only when the right implementation direction is not yet clear.
+Use this skill only when the right direction is not yet clear.
 
-## Relationship to Initial Thinking
+## When to use
 
-All tasks require initial thinking.
+- Requirements are ambiguous or acceptance criteria are unclear
+- Multiple viable approaches with real tradeoffs
+- The decision affects behavior, architecture, security, or long-term maintainability
+- The user explicitly asks to explore options
 
-This skill is not the same as initial thinking.
+## When not to use
 
-This skill is for deeper structured exploration when initial thinking reveals ambiguity, tradeoffs, multiple viable approaches, unclear acceptance criteria, or meaningful behavior, design, or architecture impact.
-
-Skipping this skill for a simple task does not mean skipping thought.
-
-It means the initial triage found no need for formal brainstorming.
-
-## Use This Skill When
-
-- requirements are ambiguous
-- the user is asking for a new behavior or feature
-- acceptance criteria are unclear
-- there are multiple viable approaches
-- there are product, UX, API, data, architecture, security, reliability, or correctness tradeoffs
-- the implementation direction is not obvious
-- the change may affect long-term maintainability
-- the user explicitly asks to explore options
-
-## Do Not Use This Skill When
-
-- typo fixes
-- copy-only changes
-- mechanical renames
-- one-line config updates
-- stale path or reference cleanup
-- simple bug fixes with known cause and narrow scope
-- test-only maintenance with clear expected behavior
-- executing an already-approved ExecPlan
-
-For these tasks, still perform initial thinking through `using-skills`, then proceed with the minimum sufficient process.
-
-## Required Reading
-
-`AGENTS.md` is already loaded.
-
-Read only what the design question needs:
-- `harness/feature_index.json` for related feature scope
-- exact product/spec docs for behavior when they exist
-- `docs/ARCHITECTURE.md` for app boundaries
-- exact `docs/frontend/*.md` leaf for UI, routing, state/data, forms, or i18n questions
-- exact `docs/features/*.md` leaf for feature workflow questions
-- exact nearby source files for the design area
+- Typo fixes, mechanical renames, one-line config changes
+- Simple bug fixes with known cause and narrow scope
+- Executing an already-approved plan
 
 ## Process
 
-1. Understand the decision that is actually open.
-2. Ask concise clarifying questions only when needed.
-3. Compare 2-3 viable approaches when tradeoffs matter.
-4. Recommend one approach with clear reasons.
-5. Record the result in the smallest durable artifact that fits.
+1. Name the open decision.
+2. Ask concise clarifying questions only when the codebase cannot answer.
+3. Compare 2–3 viable approaches when tradeoffs matter.
+4. Recommend one with clear reasons.
 
 ## Output
 
-Use a compact structure:
-
 ```text
 Brainstorm result:
-- Problem understanding:
-- Key assumptions:
-- Options considered:
+- Problem:
+- Assumptions:
+- Options:
 - Tradeoffs:
 - Recommendation:
 - Open questions:
-- Whether this should become an ExecPlan:
+- Next step: [direct execution | writing-plans | prototype]
 ```
 
-## Artifact Rule
-
-- If the decision is durable UI or architecture guidance, update the smallest relevant `docs/frontend/*` leaf or `docs/ARCHITECTURE.md`.
-- If the result should become executable implementation work, hand off to `writing-plans`.
-- If the work is small and already clear after discussion, continue without forcing a design doc.
-
-## Forbidden Behavior
-
-- Do not require brainstorming for every modification.
-- Do not treat `brainstorming` as a substitute for the mandatory initial thinking done in `using-skills`.
-- Do not create a parallel upstream doc tree for skill-specific notes.
-- Do not block obvious low-risk execution with unnecessary design ceremony.
+If the direction is clear after discussion, proceed without forcing a design doc.
+Record durable decisions only in the smallest appropriate artifact (spec, plan, or reference doc).

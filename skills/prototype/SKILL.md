@@ -1,90 +1,42 @@
 ---
 name: prototype
-description: Build a clearly throwaway UI or logic spike when UX flow, state shape, or domain logic is too uncertain to lock directly into production code.
+description: Build a throwaway spike when UX flow, state shape, or domain logic is too uncertain to commit to production code directly.
 ---
 
 # Prototype
 
-Use this skill when the fastest way to answer the question is to build a small disposable thing.
+Use when the fastest way to answer the question is to build a small disposable thing.
 
-## When to Use
+## When to use
 
-- the user wants to try several UI directions
-- a state machine or finance rule is easier to judge by interaction than by prose
-- `grill-with-docs` or `brainstorming` narrowed the question, but not enough to commit to production code
-- the team needs evidence before writing a durable ExecPlan or implementation patch
+- UX or interaction direction is uncertain — need to see it to decide
+- A state machine or business rule is easier to judge by running it than by reading prose
+- `brainstorming` narrowed the question but not enough to commit to production code
 
-## When Not to Use
+## When not to use
 
-- the implementation path is already clear
-- the code being written is intended to ship directly
-- a design decision can be settled by reading existing docs and code alone
-
-## Required Reading
-
-Read only what anchors the prototype:
-- exact product spec or design doc for the touched flow
-- `docs/ARCHITECTURE.md` for app orientation
-- exact `docs/frontend/*.md` leaf for UI, routing, state/data, forms, or i18n prototypes
-- exact `docs/features/*.md` leaf for feature workflow prototypes
-- existing nearby component/module code so the spike sits close to the real target
-
-## Branches
-
-Choose one branch:
-- `UI prototype` — several clearly different visual or interaction directions
-- `Logic prototype` — a tiny runnable state or business-logic spike
-
-If the question is ambiguous, pick the branch that best matches the surrounding code and state the assumption.
+- The implementation path is already clear
+- The code is intended to ship directly
+- The question can be answered by reading existing docs and code
 
 ## Rules
 
-1. Mark the prototype as throwaway in name or heading.
-2. Keep it close to the real code area instead of inventing a distant sandbox tree.
-3. Use one obvious command to run it.
-4. Keep state local and disposable by default.
-5. Surface the important state or decision output clearly.
-6. Skip production polish, reusable abstractions, and full TDD unless the prototype itself is answering a testability question.
-7. Capture the answer after learning, then delete or absorb the prototype.
+1. Mark the prototype as throwaway in its name or heading.
+2. Keep it close to the real code area — do not invent a distant sandbox tree.
+3. One obvious command to run it.
+4. Keep state local and disposable.
+5. Skip production polish and reusable abstractions.
+6. After learning the answer, capture the result and delete or absorb the prototype.
 
-## Output Contract
-
-Use this structure when reporting:
+## Output
 
 ```text
 Prototype result:
 - Question answered:
-- Branch:
-- Files or route:
-- How to run:
+- Files / how to run:
 - What we learned:
-- Promote, revise, or delete:
+- Next: [promote to plan | revise | delete]
 ```
 
-## Artifact Rule
-
-The durable artifact is the answer, not the prototype.
-
-Capture the result in one of:
-- current ExecPlan
-- exact design doc
-- exact product spec
-- `harness/session-handoff.md` if the spike pauses unfinished
-
-## Forbidden Behavior
-
-- Do not let a prototype silently become production code.
-- Do not leave vague "we'll clean this later" notes.
-- Do not add persistence or infrastructure unless the question explicitly requires it.
-- Do not skip marking the prototype as disposable.
-
-## Verification Expectations
-
-- Run the prototype once through the exact scenario it was meant to answer.
-- Re-read any artifact where you record the result.
-
-## Related Skills
-
-- `grill-with-docs` before prototyping
-- `frontend-design` for high-variance UI exploration
-- `writing-plans` after the prototype closes the open question
+The durable artifact is the answer, not the prototype code. Record the result in
+the appropriate plan, spec, or reference doc.

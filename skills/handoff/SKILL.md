@@ -1,77 +1,48 @@
 ---
 name: handoff
-description: Write a clean unfinished-session handoff into harness/session-handoff.md so the next agent can resume without re-discovery.
+description: Write a concise handoff note when a session stops with meaningful unfinished work, so the next session can resume without re-discovery.
 ---
 
 # Handoff
 
-Use this skill only when a session stops with meaningful unfinished work.
+Use only when stopping mid-task with meaningful unfinished work.
 
-## When to Use
+## When to use
 
-- implementation pauses mid-feature
-- an ExecPlan step is incomplete and another session must resume it
-- verification or environment blockers prevent completion today
+- Implementation pauses with an incomplete step
+- A blocker prevents finishing today
+- Another person or session must resume
 
-## When Not to Use
+## When not to use
 
-- the work is finished and recorded in normal progress/evidence
-- there is no meaningful unfinished state to preserve
-- the "handoff" would only repeat information already captured completely elsewhere
-
-## Required Reading
-
-Before writing, read the smallest set that defines the current state:
-- current ExecPlan if one exists
-- touched `harness/features/*.json`
-- recent `harness/progress.md` entry if it contains the latest verification or blockers
-- the current `harness/session-handoff.md` so you replace stale content intentionally
-
-## Target Artifact
-
-Write to:
-
-`harness/session-handoff.md`
-
-This repo keeps unfinished-session continuity here, not in a temp directory.
+- Work is finished — just record the result normally
+- Nothing meaningful is unfinished
 
 ## Process
 
-1. Summarize what is finished.
-2. Name the exact unfinished work.
-3. Record blockers, missing decisions, and environment constraints.
-4. List the next actions in execution order.
-5. Include the latest concrete verification evidence.
-6. Add a short `Suggested skills` section for the next session when useful.
+1. Summarize what is done.
+2. Name the exact unfinished step and where to resume.
+3. List blockers, missing decisions, or environment constraints.
+4. List next actions in order.
+5. Include the latest verification evidence.
 
-## Output Contract
+## Output
 
-Use the repo template sections and keep them concise:
-- Status
-- Completed
-- In Progress
-- Blockers
-- Next Steps
-- Evidence
-- Suggested skills
+Write to the smallest artifact that fits the repo convention
+(e.g., `harness/progress.md`, a plan's Progress section, or a
+dedicated handoff file if the repo uses one). Keep it concise:
 
-## Clearing Rule
+```text
+Handoff:
+- Done:
+- In progress / resume at:
+- Blockers:
+- Next steps:
+- Evidence:
+```
 
-If the session finishes the work completely, do not create a fresh handoff.
-If an old handoff becomes stale because the work is now done, clear or replace it as part of the finishing session instead of leaving misleading restart instructions behind.
+## Rules
 
-## Forbidden Behavior
-
-- Do not use `harness/session-handoff.md` as a second progress log.
-- Do not leave stale blockers from a previous session without checking them.
-- Do not duplicate whole plan or diff bodies when a path reference is enough.
-
-## Verification Expectations
-
-- Re-read `harness/session-handoff.md` after writing.
-- If the session also claims completion, follow `verification-before-completion` instead of relying on the handoff alone.
-
-## Related Skills
-
-- `executing-plans` when stopping mid-plan
-- `verification-before-completion` when deciding whether a handoff is still needed
+- Do not duplicate entire plan bodies — reference the plan file instead.
+- Clear stale handoff notes when the work finishes.
+- Do not use a handoff as a second progress log.

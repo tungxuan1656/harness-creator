@@ -1,225 +1,63 @@
 ---
 name: writing-plans
-description: Use for Level 2 or Level 3 work, or when sequencing is unclear. Write or update an ExecPlan that fits the harness and exact task scope.
-argument-hint: 'Describe frontend feature goal, scope, constraints, and expected verification artifacts.'
+description: Write an implementation plan for work that needs multiple sessions, unclear sequencing, or durable tracking.
 ---
 
 # Writing Plans
 
-Create or update an implementation-ready ExecPlan only when the task needs that level of ceremony.
+Write a plan only when the task genuinely needs one: multi-step work with unclear
+sequencing, multiple sessions, high-risk changes, or explicit tracking requirements.
 
-## Relationship to Initial Thinking and Brainstorming
+For simple work, an inline note is enough. Do not force a formal plan on every task.
 
-`writing-plans` starts after the task direction is sufficiently clear.
+## When to write a plan
 
-It may follow:
-- direct initial triage from `using-skills`
-- `grill-with-docs` when terminology, scenarios, or edge cases need one focused clarification pass
-- a formal `brainstorming` pass
+- Multiple implementation steps spanning files, layers, or sessions
+- High-risk changes (breaking API, schema migration, irreversible side effects)
+- Work with non-obvious sequencing or acceptance criteria
+- The user explicitly requests a plan
 
-Do not require brainstorming before every plan.
+## When not to write a plan
 
-Require brainstorming first only when the plan would otherwise encode unresolved ambiguity, unchosen tradeoffs, or unclear acceptance criteria.
+- Single-step or one-shot changes
+- Work already covered by an approved plan with no open decisions
 
-This skill governs full ExecPlans, not planning in general.
-All tasks still need some planning artifact before execution:
-- tiny direct-task note for true one-shot work
-- explicit inline plan for normal Level 1 multi-step work
-- full ExecPlan for the cases covered by this skill
+## Before writing
 
-Normal inline-plan work should stay inline. Do not invoke `writing-plans` just to satisfy the idea that every task needs a plan.
+Confirm:
+- The user-visible outcome and how to verify it
+- What is in scope and what is not
+- Known risks or constraints
 
-## When to Write a Plan
+Ask concise clarifying questions if these are unclear.
 
-Use this skill for:
-- Level 2 planned feature work
-- Level 3 high-risk work
-- existing plans that need tightening before execution
-- tasks with unclear sequencing, acceptance criteria, or multi-stage verification
-- tasks with multiple implementation steps
-- tasks spanning multiple files, layers, or domains
-- tasks that need progress tracking in harness artifacts
+## Plan structure
 
-Do not use this skill for:
-- Level 0 direct tasks
-- most Level 1 small changes
-- generic brainstorming with no implementation intent
+A good plan is self-contained and executable without the original conversation:
 
-Do not create a full ExecPlan for Level 0 direct tasks.
+1. **Outcome** — what changes and how a human would verify it
+2. **Scope** — in-scope and explicitly out-of-scope
+3. **Steps** — bite-sized tasks (one action each, in order)
+4. **Verification** — concrete command or check per step, plus a final verification
+5. **Risks / rollback** — what could go wrong and how to recover
+6. **Open decisions** — anything still unresolved
 
-For Level 1 tasks, prefer a brief inline plan unless risk or ambiguity is discovered.
-Do not treat "small" as permission to skip planning entirely.
-Also do not treat "needs a plan" as permission to over-escalate normal Level 1 work into a full ExecPlan.
+## Writing rules
 
-For Level 1, a short inline plan is enough:
+- Use exact file paths — no placeholders like `TBD` or `fill in later`
+- One step = one action. If a step covers two independent things, split it.
+- Prefer test-first steps for behavior changes
+- Include the expected output for each verification command
 
-```text
-Inline plan:
-1. Inspect affected file and relevant reference.
-2. Make scoped change.
-3. Run targeted verification.
-4. Report result.
-```
+## Self-review before handing off
 
-If the task includes several meaningful steps such as reading docs, comparing patterns, extracting a helper, updating a page, and running focused verification, it should usually show an inline plan even if it still does not deserve a full ExecPlan.
+- Does every requirement map to a step?
+- Are all file paths and command names consistent?
+- Is there a concrete verification artifact?
+- Can someone execute this plan cold, without the chat history?
 
-## Additional Reading
+## After writing
 
-AGENTS.md is read at session start. For plan writing, also read:
-- `harness/feature_index.json` — current feature status
-- Related `harness/features/*.json` — feature dependencies and evidence
-- `harness/progress.md` — recent session history
-- `harness/session-handoff.md` — if work spans sessions
-- `docs/ARCHITECTURE.md` — app orientation and source layout
-- exact `docs/frontend/*.md` leaf — UI, routing, state/data, forms, or i18n rules when touched
-- exact `docs/features/*.md` leaf — feature workflow guidance when a documented feature is touched
-
-Do not require non-existent `docs/exec-plans/*` or `docs/references/*` files. If a future task adds those docs, use them only when they are present and directly relevant.
-
-## Mandatory Inputs
-
-Collect or infer the following before drafting:
-- User-visible outcome (what behavior changes and how to verify it).
-- Scope boundaries (in-scope and out-of-scope).
-- Target domain: normally `frontend` or `tooling/docs` for this repo.
-- Risks or constraints (security, rollout, client data shape, API assumptions, compatibility).
-
-If the scope is unclear, ask concise clarifying questions before writing the plan.
-
-## Plan Lifecycle Requirements
-
-- Track planned work in `harness/feature_index.json` and a matching `harness/features/<feature-id>.json` record.
-- Create a standalone `docs/exec-plans/...` document only when the user asks for an ExecPlan or the change is large enough to need a durable long-form plan.
-- Keep deferred items in the feature record notes unless the repo later adds a dedicated plan or tech-debt index.
-
-## Scope-Driven Standards Matrix
-
-After identifying scope, require these references in the plan:
-
-### Web Frontend Scope
-
-Must apply:
-- `AGENTS.md`
-- `docs/ARCHITECTURE.md`
-- exact `docs/frontend/*.md` leaf for HeroUI, visual, routing, data, forms, or i18n work
-- exact `docs/features/*.md` leaf for work on a documented feature surface
-- relevant source files under `src/` for the exact page, component, store, API client, form, or utility being changed
-
-### Tooling or Harness Scope
-
-Must apply:
-- `AGENTS.md`
-- `.agents/README.md`
-- `harness/feature_index.json`
-- matching `harness/features/*.json`
-- exact skill file when `.agents/skills/**` is touched
-
-## Companion Skills To Note In The Plan
-
-When useful, note companion skills that should be used during implementation:
-- `grill-with-docs` before planning when product or repo vocabulary is still loose
-- `prototype` before locking the plan when UX or logic shape is still uncertain
-- `to-issues` after plan approval when execution needs thinner vertical slices
-- `test-driven-development` for behavior changes
-- `systematic-debugging` for bugs or failures
-- `requesting-code-review` for Level 2 or Level 3 review checkpoints
-- `verification-before-completion` before completion claims
-- `subagent-driven-development` only when the work is large enough, parallelizable enough, or explicitly requested
-- `executing-plans` when execution will stay inline in the current session
-- `handoff` if the plan is likely to pause with unfinished work
-
-Add a dedicated research or domain-review step only when the task actually needs it.
-
-If uncertainty is high, include a dedicated research step in the plan before implementation.
-
-## Plan Authoring Workflow
-
-Follow this sequence strictly.
-
-1. **Define purpose and user-observable behavior.**
-2. **Lock scope** — explicitly list in-scope and out-of-scope items.
-3. **Build a scope map:**
-   - Files and modules expected to change.
-   - Layer impact using `Types -> Config -> Repo -> Service -> Runtime -> UI` from `ARCHITECTURE.md`.
-   - Hard dependency checks from `ARCHITECTURE.md`:
-     - Lower layers do not depend on higher layers.
-     - UI does not bypass runtime/service contracts.
-     - Data access enters through repository or explicit adapter boundaries.
-   - If new dependencies are introduced, include explicit justification in the plan.
-4. **Add standards enforcement section:**
-   - List required references from the scope-driven matrix.
-   - Convert each selected reference into concrete coding constraints.
-5. **Write implementation narrative:**
-   - File-by-file planned edits.
-   - Data flow and interface contracts.
-6. **Add concrete commands** with working directory and expected short outputs.
-   - Include targeted verification and final broader verification appropriate to the task level.
-7. **Add validation matrix:**
-   - Happy path.
-   - Validation/error paths.
-   - Unauthorized/forbidden when relevant.
-   - Regression checks for fixed bugs.
-8. **Add idempotence and recovery:**
-   - Re-run safety.
-   - Backup/rollback for risky operations.
-9. **Add harness integration:**
-   - Required updates for `harness/feature_index.json`, `harness/features/*.json`, and `harness/progress.md`.
-10. **Add decision log placeholders and progress checklist** suitable for multi-session execution.
-    - Enforce one clearly owned current step with owner and status.
-
-## Output Contract
-
-A plan is complete only if all checks pass:
-- Uses a clear structure with objective, scope, tasks, verification, risks, and harness updates.
-- Is self-contained: no hidden assumptions.
-- Includes explicit verification commands and expected outputs.
-- Includes scope-based standards and coding notes from `AGENTS.md` and relevant docs/source files.
-- Includes required harness updates and evidence expectations.
-- Provides at least one concrete acceptance artifact (test, curl response, build transcript, or equivalent).
-- Includes objective, scope and out-of-scope, verification path, risks/blockers, progress notes, and open decisions when any exist.
-
-## Ambiguity Handling
-
-If any of these are missing, ask before finalizing:
-- Exact user-visible behavior.
-- Ownership boundary between client code and server API expectations.
-- Client data compatibility or backward-compatibility constraints.
-- Security/privacy sensitivity level.
-
-Use minimal, high-signal questions and continue once answered.
-
-## Writing Rules
-
-- Use exact file paths always.
-- Do not use placeholders like `TBD`, `TODO`, or `fill in later`.
-- If a step changes code, show the actual code or command the engineer should use.
-- Keep tasks bite-sized: one action, usually 2-5 minutes.
-- Prefer test-first steps for behavior changes.
-- Keep every plan self-contained so it can be executed without the original conversation.
-- Remove or split any step that covers multiple independent subsystems.
-
-## Self-Review
-
-After writing the complete plan, review it against the spec and the harness rules yourself:
-
-1. **Spec coverage**: can you point to a task for each requirement?
-2. **Placeholder scan**: remove any incomplete sections, vague requirements, or missing commands.
-3. **Type and name consistency**: do all file paths, function names, and commands match across tasks?
-4. **Harness alignment**: does the plan update the required harness artifacts and respect repo layering?
-5. **Verification readiness**: is there a concrete acceptance artifact and a clear verification path?
-
-If you find issues, fix them inline. If a requirement has no task, add the task.
-
-## Execution Handoff
-
-After saving the plan, recommend the execution mode that matches the actual work:
-- small or moderate plan in current session: `executing-plans`
-- large, parallelizable, or high-risk plan: candidate for `subagent-driven-development`
-
-Do not force subagent execution by default in this phase.
-
-## Quick Prompt Examples
-
-- "Create an ExecPlan for improving the create-order form flow."
-- "Plan an order detail refactor with accessibility and i18n updates."
-- "Plan a harness cleanup that touches `.agents/skills` and verification docs."
+Route to:
+- `executing-plans` — to run it in the current session
+- `harness` tracked feature — if the work needs multi-session progress tracking
