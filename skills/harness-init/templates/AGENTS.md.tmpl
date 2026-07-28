@@ -67,6 +67,17 @@ unmet condition into a met one. Failed or missing checks must remain visible. Wi
 Do not delete or loosen an acceptance/check to make an item pass. If an acceptance is incorrect,
 edit the owning file (docs/specs/<id>.md) in the same change and state the reason clearly.
 
+## checks.json discipline
+
+`harness/checks.json` is the feature checklist. Each check has a `passes` field that starts `false`.
+
+Rules:
+- **Only change `passes`** from `false` to `true` — never edit `id`, `description`, or `steps`.
+- **Never delete a check** — a deleted check cannot prove the feature works.
+- Only set `passes: true` after running the verification command and confirming the feature
+  works end-to-end as a user would experience it.
+- If a check cannot be verified, leave `passes: false` and record the reason in `harness/progress.md`.
+
 ## Recon checklist
 
 - Confirm the repository root and package boundary before making changes.

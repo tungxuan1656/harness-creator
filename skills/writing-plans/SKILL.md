@@ -50,7 +50,10 @@ A good plan is self-contained and executable without the original conversation:
 - Use exact file paths — no placeholders like `TBD` or `fill in later`
 - One step = one action. If a step covers two independent things, split it.
 - Prefer test-first steps for behavior changes
-- Include the expected output for each verification command
+- **Every step must have its own done condition** — a concrete, runnable command or check
+  that proves this specific step is complete. "Implemented" is not a done condition.
+  "Running `node --test test/foo.test.js` passes" is.
+- The done condition must be verifiable end-to-end, not just "the code looks right".
 
 ## Self-review before handing off
 

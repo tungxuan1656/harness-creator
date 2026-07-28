@@ -34,6 +34,18 @@ verification cannot be established, ask before proceeding.
 Direct is the default. Reclassify up when scope grows, a new owner appears, or
 new risk emerges. Return to a lighter mode once uncertainty is resolved.
 
+## Scope guard — one feature at a time
+
+Pick one feature from `harness/checks.json` (lowest-priority `passes: false`)
+and implement it completely before touching another. Do not attempt multiple
+features in one session. If context is running low, stop, update `harness/progress.md`,
+commit, and leave a clean state — do not half-implement the next feature.
+
+Before starting implementation in Tracked mode:
+1. Run the repo's verification command (from `AGENTS.md`) to confirm the app is healthy.
+2. If it fails, fix the existing breakage before adding new code.
+3. Only then implement the selected feature.
+
 ## Tracked mode — canonical sources
 
 - `harness/manifest.json` — feature registry and lifecycle status.
