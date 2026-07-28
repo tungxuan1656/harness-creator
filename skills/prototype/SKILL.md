@@ -1,6 +1,9 @@
 ---
 name: prototype
 description: Build a throwaway spike when UX flow, state shape, or domain logic is too uncertain to commit to production code directly.
+metadata:
+  version: "1.0.0"
+  license: MIT
 ---
 
 # Prototype

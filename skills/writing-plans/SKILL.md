@@ -1,6 +1,9 @@
 ---
 name: writing-plans
 description: Write an implementation plan for work that needs multiple sessions, unclear sequencing, or durable tracking.
+metadata:
+  version: "1.0.0"
+  license: MIT
 ---
 
 # Writing Plans

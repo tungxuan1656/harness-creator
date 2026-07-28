@@ -1,6 +1,9 @@
 ---
 name: brainstorming
 description: Structured exploration when initial thinking reveals ambiguity, competing approaches, unclear acceptance criteria, or meaningful tradeoffs. Do not use for every task.
+metadata:
+  version: "1.0.0"
+  license: MIT
 ---
 
 # Brainstorming

@@ -1,6 +1,9 @@
 ---
 name: verification-before-completion
 description: Run verification and confirm output before claiming work is complete, fixed, or passing. Evidence before assertions always.
+metadata:
+  version: "1.0.0"
+  license: MIT
 ---
 
 # Verification Before Completion

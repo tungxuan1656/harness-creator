@@ -1,7 +1,9 @@
 ---
 name: task-router
 description: Route tasks using the Direct, Tracked, and High-risk planned model.
-license: MIT
+metadata:
+  version: "1.0.0"
+  license: MIT
 ---
 
 # task-router v1.0

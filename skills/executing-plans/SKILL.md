@@ -1,6 +1,9 @@
 ---
 name: executing-plans
 description: Execute an existing written plan step by step, with verification checkpoints.
+metadata:
+  version: "1.0.0"
+  license: MIT
 ---
 
 # Executing Plans

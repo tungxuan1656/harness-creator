@@ -1,6 +1,9 @@
 ---
 name: handoff
 description: Write a concise handoff note when a session stops with meaningful unfinished work, so the next session can resume without re-discovery.
+metadata:
+  version: "1.0.0"
+  license: MIT
 ---
 
 # Handoff

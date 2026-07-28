@@ -1,7 +1,9 @@
 ---
 name: harness-init
 description: Initializes a dependency-free v1.0 harness for Node.js 20+ under a strict JSON contract.
-license: MIT
+metadata:
+  version: "1.0.0"
+  license: MIT
 ---
 
 # Harness Init v1.0
