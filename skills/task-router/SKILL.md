@@ -1,12 +1,12 @@
 ---
 name: task-router
-description: Định tuyến và điều phối task theo harness v2.1 trên Node.js 20+.
+description: Định tuyến và điều phối task theo harness v1.0 trên Node.js 20+.
 license: MIT
 ---
 
-# task-router
+# task-router v1.0
 
-Skill này vận hành layout harness v2.1 tại repository root: `harness/`. Không dùng layout khác, đặc biệt không dùng `.agents/harness` hoặc chuyển nguồn chuẩn sang thư mục ẩn. Mọi đường dẫn dưới đây tính từ repository root và target Node.js là **20+**.
+Skill này vận hành layout harness v1.0 tại repository root: `harness/`. Không dùng layout khác, đặc biệt không dùng `.agents/harness` hoặc chuyển nguồn chuẩn sang thư mục ẩn. Mọi đường dẫn dưới đây tính từ repository root và target Node.js là **20+**.
 
 ## Quy tắc nguồn chuẩn
 

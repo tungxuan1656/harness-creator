@@ -1,4 +1,4 @@
-# ExecPlan guide v2.1
+# ExecPlan guide v1.0
 
 ExecPlan dùng đúng một file trong target:
 `docs/plans/YYYY-MM-DD--plan--<subject-id>--<intent>.md`.

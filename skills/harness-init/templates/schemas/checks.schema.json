@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:harness-init:v2.1:checks",
-  "title": "Harness v2.1 checks",
+  "$id": "urn:harness-init:v1.0:checks",
+  "title": "Harness v1.0 checks",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "checks"],

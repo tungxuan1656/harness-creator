@@ -1,10 +1,10 @@
 ---
 name: harness-init
-description: Khởi tạo harness v2.1 dependency-free cho Node.js 20+ theo contract JSON nghiêm ngặt.
+description: Khởi tạo harness v1.0 dependency-free cho Node.js 20+ theo contract JSON nghiêm ngặt.
 license: MIT
 ---
 
-# Harness Init v2.1
+# Harness Init v1.0
 
 ## Nguyên tắc
 
@@ -80,7 +80,7 @@ docs/
 directory rỗng để giữ chỗ. Artifact gate tùy chọn (fixture, snapshot, receipt, tài liệu)
 chỉ có ý nghĩa khi spec nêu nó bằng acceptance ID và evidence chỉ rõ path/command kiểm tra.
 
-## Ownership v2.1
+## Ownership v1.0
 
 Manifest chỉ đăng ký feature tracked Tier 2/3; Tier 0/Tier 1 không phải manifest entry.
 Top-level manifest có đúng `schemaVersion`, `mode`, `features`, với `schemaVersion: 1` và

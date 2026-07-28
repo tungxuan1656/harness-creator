@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:harness-init:v2.1:work",
-  "title": "Harness v2.1 feature work",
+  "$id": "urn:harness-init:v1.0:work",
+  "title": "Harness v1.0 feature work",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "id", "acceptanceResults", "nextAction", "completion"],

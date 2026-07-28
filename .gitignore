@@ -1,0 +1,8 @@
+# Operating-system metadata
+.DS_Store
+
+# Local Node.js tooling and logs
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
