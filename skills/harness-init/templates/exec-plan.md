@@ -11,74 +11,74 @@ dependsOnPlans: []
 
 # ExecPlan: <plan-id>
 
-Plan này self-contained. Người thực thi chỉ cần repository hiện tại, repo-local
-knowledge, spec canonical và nội dung plan này; không phụ thuộc instruction ẩn. Cập
-nhật plan trong lúc thực thi. File target phải có tên
-`YYYY-MM-DD--plan--<subject-id>--<intent>.md` dưới `docs/plans/`.
+This plan is self-contained. The executor needs only the current repository, repo-local
+knowledge, the canonical spec, and this plan; it does not depend on hidden instructions. Update
+the plan during execution. The target file must be named
+`YYYY-MM-DD--plan--<subject-id>--<intent>.md` under `docs/plans/`.
 
-Plan status hợp lệ chính xác là `draft`, `ready`, `active`, `blocked`, `paused`,
-`completed`, `cancelled`, `superseded`. Compatibility với feature parent: feature
-`proposed` chỉ cho plan `draft`; `planned` cho `draft` hoặc `ready`; `active` cho
-`draft`, `ready`, `active`, `blocked` hoặc `paused`; feature `completed`, `cancelled`
-hoặc `superseded` không còn plan nonterminal. Plan `active` hoặc `blocked` cần parent
-feature `active`; plan `ready` cần parent `planned` hoặc `active`. Mọi hard
-`dependsOnPlans` phải trỏ tới plan đã `completed`.
+Valid plan statuses are exactly `draft`, `ready`, `active`, `blocked`, `paused`,
+`completed`, `cancelled`, and `superseded`. Compatibility with the parent feature: feature
+`proposed` allows only plan `draft`; `planned` allows `draft` or `ready`; `active` allows
+`draft`, `ready`, `active`, `blocked`, or `paused`; features that are `completed`, `cancelled`,
+or `superseded` may not have a nonterminal plan. An `active` or `blocked` plan requires an
+`active` parent feature; a `ready` plan requires a `planned` or `active` parent. Every hard
+`dependsOnPlans` must point to a `completed` plan.
 
 ## Purpose / Big picture
 
-Nêu vấn đề, giá trị user/operator, feature ID, kết quả observable và mục tiêu đo được.
-Link spec canonical tại `docs/specs/<feature-id>.md`.
+State the problem, user/operator value, feature ID, observable outcome, and measurable goals.
+Link the canonical spec at `docs/specs/<feature-id>.md`.
 
 ## Context and orientation
 
-Ghi root, AGENTS, architecture, references, manifest entry, spec, work, code path,
-constraint và command đã đọc/chạy trong recon. Nêu rõ assumption nào là repo-local.
+Record the root, AGENTS, architecture, references, manifest entry, spec, work, code path,
+constraints, and commands read/run during recon. State clearly which assumptions are repo-local.
 
 ## Plan of work
 
-Mô tả approach nhỏ nhất đáp ứng spec, scope, non-goals, invariants và thứ tự work cấp cao.
+Describe the smallest approach that satisfies the spec, scope, non-goals, invariants, and high-level work order.
 
 ## Concrete steps
 
-Đưa các bước theo thứ tự, chỉ rõ file/artifact, input, output, owner, điều kiện chuyển
-bước và cách step sau kiểm tra kết quả. Không giấu work bằng “v.v.”.
+List the steps in order, specifying the file/artifact, input, output, owner, transition condition,
+and how the next step checks the result. Do not hide work behind “etc.”.
 
 ## Validation and acceptance
 
-Map từng acceptance ID từ spec tới command, expected exit/status và evidence path. Ghi
-negative case, anti-cheat check và effect flag cần approval.
+Map each acceptance ID from the spec to a command, expected exit/status, and evidence path. Record
+the negative case, anti-cheat check, and effect flag requiring approval.
 
 ## Idempotence and recovery
 
-Nêu cách chạy lại an toàn, dry-run, cleanup, rollback, recovery sau timeout hoặc session
-bị gián đoạn. Xác định thao tác nào không được tự động hóa.
+Describe safe reruns, dry-run, cleanup, rollback, and recovery after a timeout or interrupted
+session. Identify which operations must not be automated.
 
 ## Artifacts and notes
 
-Liệt kê file, fixture, receipt, snapshot, tài liệu và artifact gate sẽ tạo hoặc cập nhật.
-Artifact không phải evidence nếu chưa có cách kiểm tra cụ thể.
+List the files, fixtures, receipts, snapshots, documents, and gate artifacts to be created or updated.
+An artifact is not evidence without a specific way to verify it.
 
 ## Interfaces and dependencies
 
-Mô tả API, CLI argv, schema, boundary, interface compatibility và prerequisite của repo.
-Nêu external service/capability cần có; không giấu effect.
+Describe the API, CLI argv, schema, boundary, interface compatibility, and repository prerequisites.
+State the required external services/capabilities; do not hide effects.
 
 ## Progress
 
-Ghi entry có ngày, status, owner, command, kết quả, evidence và next action. Đây là log
-thực thi, không thay cho work JSON.
+Record entries with the date, status, owner, command, result, evidence, and next action. This is
+an execution log and does not replace the work JSON.
 
 ## Surprises & discoveries
 
-Ghi phát hiện khác dự kiến, failure mode, constraint mới và ảnh hưởng tới plan/spec.
-Không xóa lịch sử phát hiện.
+Record unexpected discoveries, failure modes, new constraints, and their impact on the plan/spec.
+Do not delete the discovery history.
 
 ## Decision log
 
-Ghi quyết định, ngày, người quyết định, lựa chọn bị loại và rationale. Nếu acceptance
-thay đổi, sửa spec canonical cùng thay đổi và ghi lý do/evidence.
+Record the decision, date, decision-maker, rejected options, and rationale. If an acceptance
+changes, update the canonical spec in the same change and record the reason/evidence.
 
 ## Outcomes & retrospective
 
-Đối chiếu mục tiêu với kết quả observable, acceptance/evidence đã đạt, phần còn thiếu,
-rủi ro còn lại, follow-up và điều kiện handoff/lifecycle cuối cùng.
+Compare the goals with the observable results, achieved acceptance/evidence, missing pieces,
+remaining risks, follow-up, and final handoff/lifecycle conditions.

@@ -1,12 +1,13 @@
 # ExecPlan guide v1.0
 
-ExecPlan dùng đúng một file trong target:
+An ExecPlan uses exactly one file in the target:
 `docs/plans/YYYY-MM-DD--plan--<subject-id>--<intent>.md`.
-Không dùng tên ngắn khác, không đặt plan trong harness. File phải có standard
-frontmatter và 12 heading dưới đây, đúng thứ tự. Plan self-contained: link spec để
-truy nguyên nhưng ghi đủ context, quyết định, command và evidence cho người thực thi.
+Do not use another short name or place the plan in harness. The file must have
+the standard frontmatter and the 12 headings below, in the exact order. The
+plan is self-contained: link to the spec for traceability, but record enough
+context, decisions, commands, and evidence for the implementer.
 
-## Frontmatter chuẩn
+## Standard frontmatter
 
 ```yaml
 ---
@@ -21,14 +22,14 @@ dependsOnPlans: []
 ---
 ```
 
-**Lifecycle và compatibility:** Plan status hợp lệ chính xác: `draft | ready | active | blocked | paused | completed |
-cancelled | superseded`. Feature parent tương thích như sau: `proposed → draft`; `planned
-→ draft/ready`; `active → draft/ready/active/blocked/paused`; `completed`, `cancelled` và
-`superseded` không có plan nonterminal. Plan `active` hoặc `blocked` bắt buộc parent
-feature `active`; plan `ready` bắt buộc parent `planned` hoặc `active`. Mọi hard
-`dependsOnPlans` chỉ được thỏa mãn bởi plan `completed`.
+**Lifecycle and compatibility:** Valid plan statuses are exactly `draft | ready | active | blocked | paused | completed |
+cancelled | superseded`. Feature-parent compatibility is as follows: `proposed → draft`; `planned
+→ draft/ready`; `active → draft/ready/active/blocked/paused`; `completed`, `cancelled`, and
+`superseded` have no nonterminal plan. An `active` or `blocked` plan requires an `active` parent
+feature; a `ready` plan requires a `planned` or `active` parent. Every hard
+`dependsOnPlans` dependency is satisfied only by a `completed` plan.
 
-## 12 heading bắt buộc
+## Required 12 headings
 
 1. `Purpose / Big picture`
 2. `Context and orientation`
@@ -43,7 +44,8 @@ feature `active`; plan `ready` bắt buộc parent `planned` hoặc `active`. M�
 11. `Decision log`
 12. `Outcomes & retrospective`
 
-Mỗi heading phải có nội dung cụ thể hoặc ghi rõ “none” kèm lý do. Validation map mọi
-acceptance ID tới command và evidence. Progress ghi status/owner/next action thật,
-không biến plan thành work record. Rollback, retry và boundary phải rõ để plan có thể
-tiếp tục sau khi session bị gián đoạn.
+Each heading must contain specific content or explicitly say “none” with a
+reason. Validation maps every acceptance ID to a command and evidence.
+Progress records the actual status/owner/next action; it must not turn the plan
+into a work record. Rollback, retry, and boundaries must be clear so the plan
+can continue after an interrupted session.

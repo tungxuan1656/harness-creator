@@ -1,10 +1,11 @@
-# Manifest, work và schemas
+# Manifest, work, and schemas
 
-Các file trong `templates/schemas/` là JSON Schema Draft 2020-12 cho structural shape.
-Schema không tự quyết định file tồn tại, lifecycle, prerequisite hay correspondence
-giữa spec và work; `harness/scripts/validate.mjs` thực thi semantic/cross-file rules.
+Files under `templates/schemas/` are JSON Schema Draft 2020-12 definitions of
+the structural shape. The schema does not itself determine file existence,
+lifecycle, prerequisites, or correspondence between spec and work;
+`harness/scripts/validate.mjs` enforces the semantic/cross-file rules.
 
-## Manifest canonical
+## Canonical manifest
 
 ```json
 {
@@ -23,34 +24,39 @@ giữa spec và work; `harness/scripts/validate.mjs` thực thi semantic/cross-f
 }
 ```
 
-Mọi manifest entry là feature tracked Tier 2/3. Tier 0/Tier 1 không được đăng ký.
-Manifest không có title, behavior, acceptance prose hay work path. Spec path luôn suy
-ra đúng theo ID và là nguồn chuẩn duy nhất cho title, behavior và acceptance.
+Every manifest entry is a tracked Tier 2/3 feature. Tier 0/Tier 1 features are
+not registered. The manifest has no title, behavior, acceptance prose, or work
+path. The spec path is always derived from the ID and is the sole source of
+truth for the title, behavior, and acceptance.
 
-Status hợp lệ là `proposed`, `planned`, `active`, `blocked`, `completed`, `cancelled`,
-`superseded`. `owners` là mảng string không rỗng. `dependsOn` là mảng ID duy nhất,
-mọi ID phải tồn tại và không tự trỏ. Sequential có một slot active/blocked; prerequisite
-hard của active/blocked/completed phải completed.
+Valid statuses are `proposed`, `planned`, `active`, `blocked`, `completed`,
+`cancelled`, `superseded`. `owners` is a non-empty array of strings.
+`dependsOn` is an array of unique IDs; every ID must exist and must not point to
+itself. Sequential mode has one active/blocked slot; hard prerequisites of
+active/blocked/completed features must be completed.
 
-## Work canonical
+## Canonical work
 
-Work path được suy ra là `harness/work/<id>.json`. Top-level có đúng:
-`schemaVersion`, `id`, `acceptanceResults`, `nextAction`, `completion`; schemaVersion là
-1. Mỗi acceptance result có đúng `id`, `met`, `evidence`, evidence là string hoặc null.
-`nextAction` là string hoặc null.
+The work path is derived as `harness/work/<id>.json`. Its top level has exactly:
+`schemaVersion`, `id`, `acceptanceResults`, `nextAction`, `completion`; its
+schemaVersion is 1. Each acceptance result has exactly `id`, `met`, `evidence`,
+where evidence is a string or null. `nextAction` is a string or null.
 
-Completion null hoặc object chỉ có `verifiedAt`, `completedAt`, `cancellationSummary`,
-`supersededBy`. Active/blocked cần next action không rỗng. Completed cần nextAction null,
-verifiedAt/completedAt ISO UTC, mọi acceptance met và evidence. Cancelled cần nextAction
-null cùng cancellationSummary không rỗng. Superseded cần nextAction null cùng
-supersededBy tồn tại và khác chính nó. Các status còn lại cần completion null.
+Completion is null or an object containing only `verifiedAt`, `completedAt`,
+`cancellationSummary`, and `supersededBy`. Active/blocked requires a non-empty
+next action. Completed requires `nextAction` null, ISO UTC
+`verifiedAt`/`completedAt`, and every acceptance met with evidence. Cancelled
+requires `nextAction` null and a non-empty `cancellationSummary`. Superseded
+requires `nextAction` null and an existing `supersededBy` that is not the
+feature itself. All other statuses require `completion` null.
 
-Work không lặp title, behavior, acceptance prose, status hay blocker. Evidence phải là
-command/path/result/receipt có thể kiểm tra; không coi việc spawn command là acceptance.
+Work does not repeat the title, behavior, acceptance prose, status, or blocker.
+Evidence must be a checkable command/path/result/receipt; spawning a command is
+not acceptance.
 
-## Spec và acceptance
+## Spec and acceptance
 
-Spec có identity heading và stable lines:
+A spec has an identity heading and stable lines:
 
 ```markdown
 # Feature: example-feature
@@ -60,8 +66,9 @@ Spec có identity heading và stable lines:
 - [a2] Runner writes an observable receipt.
 ```
 
-Validator đọc ID theo đúng thứ tự và bắt work khớp exact sequence. Đổi behavior thì
-đổi spec canonical trước, không sửa work để làm gate xanh.
+The validator reads IDs in exact order and requires work to match the exact
+sequence. To change behavior, change the canonical spec first; do not edit work
+to make the gate green.
 
 ## Checks
 
@@ -88,5 +95,6 @@ Validator đọc ID theo đúng thứ tự và bắt work khớp exact sequence.
 }
 ```
 
-`argv` là array trực tiếp cho `spawn`, không phải shell string. Quick chỉ chọn check
-safe; full chọn required-by-default và yêu cầu explicit effect flags.
+`argv` is a direct array for `spawn`, not a shell string. Quick selects only
+safe checks; full selects required-by-default checks and requires explicit
+effect flags.

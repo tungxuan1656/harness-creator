@@ -1,29 +1,29 @@
 # Feature: <feature-id>
 
-## Tiêu đề
+## Title
 
-<Tiêu đề ngắn gọn. Heading này và behavior bên dưới là nguồn chuẩn.>
+<Short title. This heading and the behavior below are the source of truth.>
 
-## Bối cảnh
+## Background
 
-<Vì sao feature tồn tại và constraint repository-local nào áp dụng.>
+<Why the feature exists and which repo-local constraints apply.>
 
-## Hành vi
+## Behavior
 
-<Behavior normative, input, output, lỗi và boundary.>
+<Normative behavior, input, output, errors, and boundaries.>
 
-## Tiêu chí acceptance
+## Acceptance criteria
 
-Dùng ID lowercase ổn định. Giữ ID khi đổi wording; chỉ thêm ID cho gate mới. Validator
-parse các dòng `- [id] text` sau đây.
+Use stable lowercase IDs. Keep IDs when changing wording; add IDs only for new gates. The validator
+parses the following `- [id] text` lines.
 
-- [a1] <Điều kiện acceptance có thể test và có evidence observable.>
-- [a2] <Điều kiện test thứ hai nếu cần.>
+- [a1] <Acceptance condition that can be tested and has observable evidence.>
+- [a2] <Second test condition if needed.>
 
-## Ngoài phạm vi
+## Out of scope
 
-<Các phần loại trừ rõ ràng.>
+<Clearly excluded parts.>
 
-## Ghi chú evidence
+## Evidence notes
 
-<Command, path, fixture hoặc receipt có thể chứng minh từng acceptance result.>
+<Command, path, fixture, or receipt that can prove each acceptance result.>

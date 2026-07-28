@@ -1,142 +1,146 @@
 ---
 name: task-router
-description: Định tuyến task v1.0 theo mô hình Direct, Tracked và High-risk planned trên Node.js 20+.
+description: Route tasks in v1.0 using the Direct, Tracked, and High-risk planned model on Node.js 20+.
 license: MIT
 ---
 
 # task-router v1.0
 
-Đây là **decision router**, không phải quy trình quản lý dự án bắt buộc cho mọi
-task. Mục tiêu là chọn mức ghi nhận và kiểm chứng vừa đủ, làm rõ việc cần làm,
-rồi dừng khi đã đạt điều kiện hoàn tất.
+This is a **decision router**, not a mandatory project-management process for
+every task. Its goal is to choose just enough record-keeping and verification,
+clarify the work, and stop once the completion condition is met.
 
-## Triage ban đầu
+## Initial triage
 
-Trước khi chọn mode, làm rõ ngắn gọn:
+Before selecting a mode, clarify briefly:
 
-- outcome người dùng muốn đạt;
-- điểm mơ hồ, giả định và phạm vi không làm;
-- tác động lên behavior, contract, security/privacy và side effect;
-- điều kiện observable để coi là xong và verification dự kiến.
+- the outcome the user wants;
+- ambiguity, assumptions, and out-of-scope work;
+- impact on behavior, contract, security/privacy, and side effects;
+- the observable acceptance condition and expected verification.
 
-Instruction cục bộ đã được caller nạp thì coi như đã đọc. Nếu chưa có, đọc
-`AGENTS.md` gần nhất và chỉ đọc các file chính xác liên quan đến task. Không mặc
-định đọc rộng docs, git history, architecture hoặc trạng thái harness.
+Local instructions already loaded by the caller count as read. Otherwise, read
+the nearest `AGENTS.md` and only the exact files relevant to the task. Do not
+default to broadly reading docs, git history, architecture, or harness state.
 
-Nếu chưa thể xác định outcome, phạm vi hoặc verification, hỏi lại trước khi
-chọn mode. Không biến suy đoán thành acceptance.
+If the outcome, scope, or verification cannot be established, ask before
+selecting a mode. Do not turn assumptions into acceptance.
 
-## Ba mode
+## Three modes
 
-| Mode | Chọn khi | Cách thực hiện |
+| Mode | Choose when | How to work |
 | --- | --- | --- |
-| **Direct** | Mặc định cho việc rõ ràng, bounded, reversible và hoàn tất trong một session. | Không tạo artifact tracking của harness và không lập formal plan. Nêu scope nhỏ, done condition và verification inline khi hữu ích. |
-| **Tracked** | Cần nhiều session hoặc handoff; acceptance đáng kể; có nhiều owner/milestone; cần blocker/next action bền vững; hoặc user yêu cầu ghi nhận. | Chỉ dùng/cập nhật artifact liên quan trực tiếp trong manifest/spec/work. Không ép cập nhật tiến độ hay plan toàn cục. |
-| **High-risk planned** | Migration; auth/security/privacy; breaking API hoặc schema; data/external side effect không đảo ngược; rollout/rollback; chuỗi nguy hiểm qua nhiều hệ thống; hoặc còn material uncertainty chưa giải quyết. | Lập plan compact gồm context/outcome, approach/milestones, verification, risk/rollback và decisions/handoff. Không áp lifecycle plan riêng hoặc nghi thức heading cố định. |
+| **Direct** | The default for clear, bounded, reversible work that can finish in one session. | Create no harness tracking artifacts and no formal plan. State the small scope, done condition, and verification inline when useful. |
+| **Tracked** | The work needs multiple sessions or a handoff; has substantial acceptance; involves multiple owners or milestones; needs a durable blocker/next action; or the user explicitly requests tracking. | Use or update only directly relevant artifacts in the manifest/spec/work set. Do not force global progress or plan updates. |
+| **High-risk planned** | Migration; auth/security/privacy; a breaking API or schema; an irreversible data or external side effect; rollout/rollback; a dangerous sequence across multiple systems; or unresolved material uncertainty. | Create a compact plan with context/outcome, approach/milestones, verification, risk/rollback, and decisions/handoff. Do not impose a separate plan lifecycle or fixed-heading ceremony. |
 
-Direct là mặc định, không phải cam kết giữ mode bằng mọi giá. Khi scope mở
-rộng, acceptance tăng, xuất hiện owner khác hoặc rủi ro mới, reclassify sang
-Tracked hoặc High-risk planned. Có thể quay về mode nhẹ hơn khi uncertainty và
-rủi ro đã được giải quyết bằng evidence.
+Direct is the default, not a commitment at all costs. When scope expands,
+acceptance grows, another owner appears, or new risk emerges, reclassify to
+Tracked or High-risk planned. You may return to a lighter mode once uncertainty
+and risk have been resolved with evidence.
 
-## Nguồn chuẩn trong mode Tracked
+## Canonical sources in Tracked mode
 
-Chỉ áp dụng các quy tắc dưới đây khi task thực sự dùng artifact tracking:
+Apply the following rules only when the task actually uses tracking artifacts:
 
-- `harness/manifest.json` là registry feature và nơi duy nhất chứa feature
-  status.
-- `docs/specs/<id>.md` là nguồn chuẩn cho scope, behavior và acceptance
-  observable.
-- `harness/work/<id>.json` là execution record dẫn xuất. Work giữ
-  `acceptanceResults`, `nextAction`, `completion` và `schemaVersion: 1`; không
-  chép status, title hoặc blocker vào work.
-- `harness/checks.json` là registry check; validator và runner là các script
-  được registry/skill chỉ định.
+- `harness/manifest.json` is the feature registry and the only place that
+  contains feature status.
+- `docs/specs/<id>.md` is the source of truth for scope, behavior, and
+  observable acceptance.
+- `harness/work/<id>.json` is the derived execution record. Work contains
+  `acceptanceResults`, `nextAction`, `completion`, and `schemaVersion: 1`; do
+  not copy status, title, or blocker into work.
+- `harness/checks.json` is the check registry; the validator and runner are the
+  scripts designated by the registry/skill.
 
-Không tạo bản sao canonical, không đổi acceptance để làm verification xanh,
-không coi log hoặc việc file tồn tại là evidence. Completion chỉ được báo khi
-acceptance và verification có bằng chứng kiểm tra được. Blocker phải nói rõ
-impact, phần chưa xác minh và next action; không giả vờ pass.
+Do not create a competing canonical copy, change acceptance to make verification
+green, or treat a log or file's existence as evidence. Report completion only
+when acceptance and verification have checkable evidence. A blocker must state
+its impact, what remains unverified, and the next action; never pretend to pass.
 
-## Lệnh và checks
+## Commands and checks
 
-Chỉ chạy command khi kết quả của nó có thể thay đổi quyết định, scope hoặc
-completion. Không lặp lại validation/check không đổi nếu không có lý do mới.
+Run a command only when its result can change a decision, scope, or completion.
+Do not repeat unchanged validation/checks without a new reason.
 
-- Không chạy root initializer như một nghi thức orientation thường lệ.
-- Chỉ chạy `node harness/scripts/validate.mjs` khi đang dùng hoặc thay đổi
-  artifact tracked. Chạy một lần cho mỗi meaningful state; chạy lại sau thay
-  đổi có thể ảnh hưởng kết luận.
-- Chỉ chạy `node harness/scripts/run-checks.mjs` khi có configured check liên
-  quan hoặc acceptance yêu cầu. Đọc usage của runner một lần trong session,
-  sau đó chọn đúng profile/check cần thiết; không chạy toàn bộ registry theo
-  thói quen.
-- Chỉ yêu cầu effect approval cho effect của check đã chọn. Các key
-  `network`, `writes`, `services`, `installs`, `secrets` và flag tương ứng phải
-  khớp registry. Effect declaration là metadata để approval/audit, **không phải
-  sandbox**.
-- Check không có trong registry không được bịa ra. Nếu check cần thiết nhưng
-  không thể chạy, báo phần chưa xác minh và blocker thật.
+- Do not run the root initializer as a routine orientation step.
+- Run `node harness/scripts/validate.mjs` only when using or changing tracked
+  artifacts. Run it once for each meaningful state, and rerun it after a change
+  that could affect the conclusion.
+- Run `node harness/scripts/run-checks.mjs` only when a relevant configured
+  check exists or acceptance requires it. Read the runner usage once per
+  session, then select only the needed profile/check; do not run the entire
+  registry by habit.
+- Require effect approval only for effects of the selected check. The keys
+  `network`, `writes`, `services`, `installs`, `secrets` and their corresponding
+  flags must match the registry. Effect declarations are approval/audit
+  metadata, **not a sandbox**.
+- Do not invent a check that is absent from the registry. If a required check
+  cannot run, report the unverified portion and the real blocker.
 
-`harness-init` chỉ được chọn khi đã quan sát một missing canonical scaffold
-artifact cụ thể, hoặc khi user đã explicit approve layout migration cụ thể.
-Không gọi nó để sửa chung vấn đề access, dependency, documentation hay
-capability. Khi được gọi, giữ các guarantee của harness-init: missing-only,
-no-overwrite và migration chỉ khi có explicit consent.
+`harness-init` may be selected only after observing one specific missing
+canonical scaffold artifact, or when the user has explicitly approved a
+specific layout migration. Do not call it to repair general access,
+dependencies, documentation, or capabilities. When it is called, preserve
+harness-init's guarantees: missing-only, no-overwrite, and migration only with
+explicit consent.
 
-## Verification theo tỷ lệ
+## Proportionate verification
 
-| Loại việc | Verification tối thiểu phù hợp |
+| Work type | Appropriate minimum verification |
 | --- | --- |
-| Documentation/config | Review diff, heading/path/link và code sample liên quan. Chạy syntax check chỉ khi thay đổi đó có thể làm command hoặc parser hỏng. |
-| Narrow code | Chạy test, syntax, lint hoặc typecheck gần nhất với change; thêm boundary case nếu behavior có nhánh mới. |
-| Public/API behavior | Kiểm tra contract thành công và lỗi, input boundary, backward compatibility và observable output. |
-| Cross-system | Chạy integration/fixture liên quan, kiểm tra timeout/retry/cleanup và chỉ cấp approvals cho effect đã chọn. |
-| High-risk | Xác nhận precondition và owner approval; ưu tiên dry-run/staging nếu có; kiểm chứng rollback/recovery, failure mode và outcome sau side effect. |
+| Documentation/configuration | Review the diff, headings/paths/links, and relevant code samples. Run a syntax check only when the change could break a command or parser. |
+| Narrow code | Run the nearest relevant test, syntax check, lint, or typecheck; add a boundary case when behavior gains a new branch. |
+| Public/API behavior | Check successful and error contracts, input boundaries, backward compatibility, and observable output. |
+| Cross-system | Run the relevant integration/fixture, check timeout/retry/cleanup, and grant approval only for selected effects. |
+| High-risk | Confirm preconditions and owner approval; prefer dry-run/staging when available; verify rollback/recovery, failure modes, and the outcome after the side effect. |
 
-Verification phải ghi command, exit/result và path/evidence khi có thể. Không
-gọi một check “pass” nếu baseline đã fail mà chưa xác định attribution. Nếu
-verification bắt buộc không có hoặc không truy cập được, dừng và báo blocker.
+Verification should record the command, exit/result, and path/evidence when
+possible. Do not call a check “pass” when the baseline is failing without
+establishing attribution. If required verification is unavailable or
+inaccessible, stop and report a blocker.
 
-## Khi phải dừng, hỏi hoặc block
+## When to stop, ask, or block
 
-Dừng ngay khi acceptance và verification đã đạt; không thêm speculative cleanup.
-Hỏi user, block hoặc replan khi gặp một trong các điều kiện sau:
+Stop as soon as acceptance and verification are reached; do not add speculative
+cleanup. Ask the user, block, or replan when any of the following occurs:
 
-- material ambiguity về outcome, scope, authority hoặc acceptance;
-- side effect hoặc hành động irreversible chưa được approve;
-- local changes chồng lấn và không thể xác định ownership/an toàn merge;
-- thiếu access, secret, dependency hoặc môi trường bắt buộc;
-- baseline failure không thể quy cho change hiện tại;
-- cùng một failure lặp lại mà không có evidence mới;
-- verification bắt buộc không khả dụng hoặc kết quả không đáng tin.
+- material ambiguity about outcome, scope, authority, or acceptance;
+- an unapproved side effect or irreversible action;
+- overlapping local changes whose ownership or merge safety cannot be established;
+- missing required access, secret, dependency, or environment;
+- a baseline failure that cannot be attributed to the current change;
+- the same failure repeats without new evidence;
+- required verification is unavailable or its result cannot be trusted.
 
-Blocker phải có impact và next action cụ thể. Không retry vô hạn, không hạ
-ngưỡng acceptance, không nuốt stderr/exit code và không đổi mode để che rủi ro.
+A blocker must have a concrete impact and next action. Do not retry forever,
+lower the acceptance threshold, swallow stderr/exit codes, or change modes to
+hide risk.
 
-## Route và completion report
+## Route and completion report
 
-Route result nên ngắn nhưng đủ để người thực thi hiểu quyết định:
+The route result should be short but sufficient for the implementer to understand
+the decision:
 
 ```text
 mode: Direct | Tracked | High-risk planned
-outcome: <kết quả cần đạt>
-scope: <artifact/code/doc cụ thể; non-goal nếu cần>
-done when: <điều kiện observable>
-verification: <command/check hoặc lý do không chạy>
-artifacts: <chỉ các nguồn liên quan, nếu có>
-escalation: <none hoặc trigger cần theo dõi>
+outcome: <desired outcome>
+scope: <specific artifact/code/doc; non-goal if needed>
+done when: <observable condition>
+verification: <command/check or reason not run>
+artifacts: <only relevant sources, if any>
+escalation: <none or trigger to watch>
 ```
 
-Completion report chỉ cần:
+The completion report needs only:
 
 ```text
-mode: <mode đã dùng>
-scope/change: <đã thay đổi gì>
-verification/evidence: <kết quả và đường dẫn evidence>
-blockers/uncertainty: <none hoặc mô tả impact + next action>
+mode: <mode used>
+scope/change: <what changed>
+verification/evidence: <result and evidence path>
+blockers/uncertainty: <none or impact + next action>
 ```
 
-Không biến route thành bảng trạng thái bắt buộc, reconnaissance rộng, cập nhật
-toàn cục hoặc blanket check execution. Báo cáo trung thực phần đã làm, phần
-chưa xác minh và quyết định tiếp theo.
+Do not turn routing into a mandatory status matrix, broad reconnaissance,
+global updates, or blanket check execution. Report honestly what was done, what
+remains unverified, and the next decision.

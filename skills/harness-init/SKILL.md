@@ -1,60 +1,68 @@
 ---
 name: harness-init
-description: Khởi tạo harness v1.0 dependency-free cho Node.js 20+ theo contract JSON nghiêm ngặt.
+description: Initializes a dependency-free v1.0 harness for Node.js 20+ under a strict JSON contract.
 license: MIT
 ---
 
 # Harness Init v1.0
 
-## Nguyên tắc
+## Principles
 
-Skill này tạo harness canonical cho một repository Node.js 20+. Nó không cài dependency,
-không chạy migration ứng dụng và không tự thêm data model khác.
+This skill creates the canonical harness for a Node.js 20+ repository. It does
+not install dependencies, run application migrations, or automatically add
+another data model.
 
-- **Recon-first**: đọc root, `AGENTS.md`, architecture, manifest, spec, plan, reference
-  và trạng thái harness hiện hữu trước khi thay đổi.
-- **Missing-only**: chỉ tạo artifact còn thiếu, báo rõ `CREATE`/`SKIP`, không overwrite.
-- **Migrate-old-layout có chủ đích**: chỉ nhận diện `.agents/harness` và `cairn`; mặc định
-  dừng, chỉ bổ sung canonical tree khi caller đưa `--migrate-old-layout`, giữ nguyên dữ liệu cũ.
-- JSON manifest/work/check là state canonical; không suy luận state từ log, tên file hay comment.
-- Không tạo thư mục rỗng hoặc file placeholder trong target. Artifact tùy chọn chỉ tạo khi có nội dung.
-- Entrypoint tùy chọn là root `init.mjs`; không dùng hoặc sinh `init.sh`.
+- **Recon-first**: inspect the root, `AGENTS.md`, architecture, manifest, spec,
+  plan, references, and existing harness state before making changes.
+- **Missing-only**: create only missing artifacts, report `CREATE`/`SKIP`, and
+  use no-overwrite behavior.
+- **Intentional old-layout migration**: recognize only `.agents/harness` and
+  `cairn`; stop by default, add the canonical tree only when the caller passes
+  `--migrate-old-layout`, and preserve the old data.
+- The JSON manifest/work/check files are canonical state; do not infer state
+  from logs, filenames, or comments.
+- Do not create empty directories or placeholder files in the target. Create
+  optional artifacts only when they have content.
+- The optional entrypoint is the root `init.mjs`; do not use or generate `init.sh`.
 
-## Quy trình creator
+## Creator workflow
 
-Luôn dry-run trước, đọc output, sau đó real-run bằng cùng metadata:
+Always dry-run first, inspect the output, then perform the real run with the
+same metadata:
 
 ```sh
 node harness-init/scripts/create-harness.mjs /path/to/repo \
   --repo-name my-repo \
-  --purpose "Mục đích repository" \
+  --purpose "Repository purpose" \
   --verification-command "node --test" \
   --dry-run
 
 node harness-init/scripts/create-harness.mjs /path/to/repo \
   --repo-name my-repo \
-  --purpose "Mục đích repository" \
+  --purpose "Repository purpose" \
   --verification-command "node --test"
 ```
 
-Creator yêu cầu target đã tồn tại, nhận diện root `harness` canonical bằng
-`schemaVersion: 1` và `features` array, không đoán từ file schemaVersion rời rạc. Với
-root canonical hiện có, creator chỉ augment gap còn thiếu.
+The creator requires the target to exist. It identifies a canonical root
+`harness` by its `schemaVersion: 1` and `features` array; it does not infer one
+from scattered schemaVersion files. When a canonical root already exists, the
+creator augments only missing gaps.
 
-Init chỉ được copy khi có `--with-init` cùng `--start-argv` và `--smoke-argv` là JSON
-array tường minh; `--readiness-url` là HTTP(S) tùy chọn:
+Init is copied only with `--with-init` together with `--start-argv` and
+`--smoke-argv` as explicit JSON arrays; `--readiness-url` is optional HTTP(S):
 
 ```sh
 node harness-init/scripts/create-harness.mjs /path/to/repo \
-  --repo-name my-repo --purpose "Mục đích" --verification-command "node --test" \
+  --repo-name my-repo --purpose "Repository purpose" --verification-command "node --test" \
   --with-init \
   --start-argv '["node","server.mjs"]' \
   --smoke-argv '["node","smoke.mjs"]' \
   --readiness-url 'http://127.0.0.1:3000/health'
 ```
 
-Init dùng `spawn` với argv và `shell:false`, readiness có giới hạn thời gian, output được
-capture/hiển thị, cleanup process bằng `SIGTERM`; không shell, install hoặc migrate.
+Init uses `spawn` with argv and `shell:false`, applies a readiness time limit,
+captures and displays output, and cleans up the process with `SIGTERM`; it does
+not use a shell, install, or migrate.
 
 ## Canonical target tree
 
@@ -69,79 +77,97 @@ harness/
   schemas/{manifest,checks,work}.schema.json
   scripts/{validate,run-checks}.mjs
   work/<id>.json
-  work/receipts/*.json                                # chỉ sau một lần check thực sự chạy
+  work/receipts/*.json                                # only after a check has actually run
 docs/
   specs/<id>.md
   plans/YYYY-MM-DD--plan--<subject-id>--<intent>.md
   references/<topic>.md
 ```
 
-`ARCHITECTURE.md`, root `init.mjs`, docs, work và receipts là optional. Không tạo
-directory rỗng để giữ chỗ. Artifact gate tùy chọn (fixture, snapshot, receipt, tài liệu)
-chỉ có ý nghĩa khi spec nêu nó bằng acceptance ID và evidence chỉ rõ path/command kiểm tra.
+`ARCHITECTURE.md`, the root `init.mjs`, docs, work, and receipts are optional.
+Do not create empty directories just to hold a place. Optional gate artifacts
+(fixtures, snapshots, receipts, documentation) are meaningful only when the
+spec names them with an acceptance ID and the evidence identifies the path and
+command being checked.
 
 ## Ownership v1.0
 
-Manifest chỉ đăng ký feature tracked Tier 2/3; Tier 0/Tier 1 không phải manifest entry.
-Top-level manifest có đúng `schemaVersion`, `mode`, `features`, với `schemaVersion: 1` và
-mode `sequential` hoặc `parallel`. Mỗi feature có đúng:
+The manifest registers only tracked Tier 2/3 features; Tier 0/Tier 1 are not
+manifest entries. The top-level manifest contains exactly `schemaVersion`,
+`mode`, and `features`, with `schemaVersion: 1` and mode `sequential` or
+`parallel`. Each feature has exactly:
 `id`, `order`, `status`, `owners`, `dependsOn`, `spec`.
 
-- `owners` là mảng string không rỗng.
-- `dependsOn` là các ID duy nhất, phải tồn tại và không được tự trỏ.
-- `spec` luôn đúng `docs/specs/<id>.md`; spec là nguồn chuẩn cho title, behavior và acceptance.
-- Status hợp lệ: `proposed`, `planned`, `active`, `blocked`, `completed`, `cancelled`, `superseded`.
-- Work path được suy ra, không ghi trong manifest: `harness/work/<id>.json`.
-- Sequential có tối đa một feature `active` hoặc `blocked`; prerequisite hard của
-  `active`/`blocked`/`completed` phải `completed`, order trước phải terminal.
+- `owners` is a non-empty array of strings.
+- `dependsOn` contains unique IDs that must exist and must not point to itself.
+- `spec` is always exactly `docs/specs/<id>.md`; the spec is the source of truth
+  for the title, behavior, and acceptance.
+- Valid statuses: `proposed`, `planned`, `active`, `blocked`, `completed`,
+  `cancelled`, `superseded`.
+- The work path is derived and is not recorded in the manifest:
+  `harness/work/<id>.json`.
+- Sequential mode allows at most one `active` or `blocked` feature; hard
+  prerequisites of `active`/`blocked`/`completed` features must be `completed`,
+  and earlier orders must be terminal.
 
-Work chỉ giữ execution result, không giữ title, prose, status hay blocker. Work có đúng
-top-level `schemaVersion: 1`, `id`, `acceptanceResults`, `nextAction`, `completion`.
-Result có đúng `id`, `met`, `evidence`, trong đó evidence là string hoặc null. `nextAction`
-là string hoặc null. Completion là null hoặc object chỉ có `verifiedAt`, `completedAt`,
-`cancellationSummary`, `supersededBy`.
+Work stores only execution results; it does not store the title, prose, status,
+or blocker. Work has exactly the top-level keys `schemaVersion: 1`, `id`,
+`acceptanceResults`, `nextAction`, and `completion`. A result has exactly `id`,
+`met`, and `evidence`, where evidence is a string or null. `nextAction` is a
+string or null. Completion is null or an object containing only `verifiedAt`,
+`completedAt`, `cancellationSummary`, and `supersededBy`.
 
-- `active`/`blocked` cần `nextAction` không rỗng.
-- `completed` cần `nextAction: null`, hai timestamp ISO UTC, mọi acceptance met và evidence.
-- `cancelled` cần `nextAction: null` và `cancellationSummary` không rỗng.
-- `superseded` cần `nextAction: null` và `supersededBy` là ID tồn tại, không phải chính nó.
-- Status còn lại có `completion: null`.
+- `active`/`blocked` require a non-empty `nextAction`.
+- `completed` requires `nextAction: null`, two ISO UTC timestamps, and every
+  acceptance met with evidence.
+- `cancelled` requires `nextAction: null` and a non-empty
+  `cancellationSummary`.
+- `superseded` requires `nextAction: null` and a `supersededBy` ID that exists
+  and is not the feature itself.
+- All other statuses have `completion: null`.
 
-Spec dùng stable acceptance lines như `- [a1] Điều kiện observable`. Validator đối chiếu
-đúng sequence acceptance ID giữa spec và work. JSON Schema chỉ mô tả structural shape;
-semantic và cross-file rules do `validate.mjs` thực thi.
+Specs use stable acceptance lines such as `- [a1] Observable condition`. The
+validator compares the exact acceptance ID sequence between the spec and work.
+JSON Schema describes only the structural shape; `validate.mjs` enforces the
+semantic and cross-file rules.
 
 ## Anti-cheat
 
-Không đánh dấu `met: true` hoặc completed vì file tồn tại, code có vẻ đúng, command đã
-được thử, output bị ẩn hoặc receipt chỉ chứng minh command đã spawn. Không đổi acceptance
-ID, làm yếu assertion, bỏ check, nuốt stderr/exit code, dùng shell injection, `|| true`,
-`; true`, mock giả kết quả, hay sửa validator để né gate. Chưa có bằng chứng thì giữ
-`met: false`, ghi next action cụ thể, và không chuyển status thành completed.
+Do not mark `met: true` or completed because a file exists, code looks correct,
+a command was tried, output was hidden, or a receipt only proves that a command
+was spawned. Do not change acceptance IDs, weaken assertions, omit checks,
+swallow stderr/exit codes, use shell injection, `|| true`, `; true`, fake mocks,
+or modify the validator to bypass a gate. Without evidence, keep `met: false`,
+record a concrete next action, and do not change the status to completed.
 
-## Checks và local knowledge
+## Checks and local knowledge
 
-`checks.json` có schemaVersion 1. Check có đúng `id`, `argv`, `cwd`, `quick`,
-`requiredByDefault`, `timeoutMs`, `declaredEffects`; effects là object boolean exact với
-`network`, `writes`, `services`, `installs`, `secrets`. `quick: true` chỉ dành cho check
-không có effect. Runner validate trước, spawn argv bằng `shell:false`, quick chỉ chạy
-check quick-safe, full chạy check required-by-default và yêu cầu cờ effect tương ứng.
-Cwd phải ở trong root; receipt chỉ ghi `harness/work/receipts/`. Registry rỗng là
-verification incomplete, không phải pass.
+`checks.json` has `schemaVersion: 1`. Each check has exactly `id`, `argv`,
+`cwd`, `quick`, `requiredByDefault`, `timeoutMs`, and `declaredEffects`; effects
+are an exact boolean object with `network`, `writes`, `services`, `installs`,
+and `secrets`. `quick: true` is reserved for checks with no effects. The runner
+validates first and spawns argv with `shell:false`; quick runs only quick-safe
+checks, while full runs checks that are required by default and requires the
+corresponding effect flags. Cwd must be inside the root; receipts are written
+only to `harness/work/receipts/`. An empty registry means verification is
+incomplete, not a pass.
 
-`AGENTS.md` là map khoảng 100 dòng: scope, source of truth, invariants, lệnh validator/
-runner, vị trí spec/plan/reference, work và quy trình progress. `ARCHITECTURE.md` cùng
-`docs/references/` là repo-local knowledge; phải đọc sau recon và trước plan, không coi
-assumption local là policy toàn cục.
+`AGENTS.md` is a roughly 100-line map covering scope, source of truth,
+invariants, validator/runner commands, spec/plan/reference locations, work, and
+the progress workflow. `ARCHITECTURE.md` and `docs/references/` are repository-
+local knowledge; read them after recon and before a plan, and do not treat local
+assumptions as global policy.
 
-ExecPlan dùng frontmatter chuẩn và có lifecycle chính xác `draft | ready | active | blocked |
-paused | completed | cancelled | superseded`. Compatibility với feature parent là:
+ExecPlans use standard frontmatter and have the exact lifecycle `draft | ready |
+active | blocked | paused | completed | cancelled | superseded`. Compatibility
+with the parent feature is:
 `proposed → draft`; `planned → draft/ready`; `active → draft/ready/active/blocked/paused`;
-feature `completed`/`cancelled`/`superseded` không có plan nonterminal. Plan `active` hoặc
-`blocked` cần parent `active`, plan `ready` cần parent `planned` hoặc `active`, và hard
-`dependsOnPlans` chỉ được satisfied bởi plan `completed`.
+features `completed`/`cancelled`/`superseded` have no nonterminal plan. An
+`active` or `blocked` plan requires an `active` parent, a `ready` plan requires
+an `active` or `planned` parent, and hard `dependsOnPlans` are satisfied only by
+a `completed` plan.
 
-## Hướng dẫn test local
+## Local testing guidance
 
 ```sh
 node --check harness-init/scripts/create-harness.mjs

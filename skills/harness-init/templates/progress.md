@@ -1,13 +1,13 @@
-# Tiến độ harness
+# Harness progress
 
-Log này ghi cập nhật vận hành ngắn, có ngày. State canonical của feature nằm trong
-`harness/manifest.json`; acceptance evidence nằm trong `harness/work/<id>.json`.
+This log records brief, dated operational updates. The canonical feature state is in
+`harness/manifest.json`; acceptance evidence is in `harness/work/<id>.json`.
 
-## Trọng tâm hiện tại
+## Current focus
 
-- Chưa có feature tracked nào được admit.
-- Chạy `node harness/scripts/validate.mjs .` sau khi thêm feature.
+- No tracked features have been admitted.
+- Run `node harness/scripts/validate.mjs .` after adding a feature.
 
-## Cập nhật
+## Updates
 
-<!-- Thêm entry YYYY-MM-DD với feature ID, action, result và evidence path. -->
+<!-- Add a YYYY-MM-DD entry with the feature ID, action, result, and evidence path. -->

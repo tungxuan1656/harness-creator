@@ -1,101 +1,102 @@
-# {{REPO_NAME}} — bản đồ cho agent
+# {{REPO_NAME}} — agent map
 
-## Phạm vi
+## Scope
 
-Mục đích repository: {{PURPOSE}}
+Repository purpose: {{PURPOSE}}
 
-Đây là bản đồ ngắn cho agent làm việc trong repository. Đọc sau recon ban đầu và trước
-khi sửa code, sau đó tuân theo tài liệu local cụ thể hơn.
+This is a brief map for agents working in the repository. Read it after the initial recon and
+before changing code, then follow more specific local documentation.
 
-## Nguồn chuẩn
+## Sources of truth
 
-- `harness/manifest.json` là inventory feature và nguồn lifecycle.
-- Behavior, title và acceptance Tier 2/3 chỉ nằm trong `docs/specs/<id>.md`.
-- `harness/work/<id>.json` chỉ chứa execution result, evidence, next action và completion object.
-- `harness/checks.json` là inventory check được allowlist.
-- `harness/progress.md` là log vận hành ngắn, không phải manifest thứ hai.
-- `ARCHITECTURE.md` và `docs/references/` là repo-local knowledge nếu có.
+- `harness/manifest.json` is the feature inventory and lifecycle source.
+- Behavior, title, and Tier 2/3 acceptance are only in `docs/specs/<id>.md`.
+- `harness/work/<id>.json` contains only the execution result, evidence, next action, and completion object.
+- `harness/checks.json` is the allowlisted check inventory.
+- `harness/progress.md` is a brief operations log, not a second manifest.
+- `ARCHITECTURE.md` and `docs/references/` are repo-local knowledge when present.
 
-## Bản đồ canonical
+## Canonical map
 
-- Code/source ứng dụng: inspect các thư mục đặc thù của repository bên dưới map này.
+- Application code/source: inspect the repository-specific directories below this map.
 - Specification: `docs/specs/<id>.md`.
-- Execution plan: `docs/plans/YYYY-MM-DD--plan--<subject-id>--<intent>.md` theo template self-contained 12 section.
-- Reference local: `docs/references/<topic>.md`.
-- Manifest và checks: `harness/manifest.json`, `harness/checks.json`.
-- Schema structural: `harness/schemas/*.schema.json` (Draft 2020-12).
+- Execution plan: `docs/plans/YYYY-MM-DD--plan--<subject-id>--<intent>.md` using the self-contained 12-section template.
+- Local reference: `docs/references/<topic>.md`.
+- Manifest and checks: `harness/manifest.json`, `harness/checks.json`.
+- Structural schema: `harness/schemas/*.schema.json` (Draft 2020-12).
 - Validator: `harness/scripts/validate.mjs`.
 - Check runner: `harness/scripts/run-checks.mjs`.
-- Bootstrap repo tùy chọn: root `init.mjs`; không bao giờ tạo hoặc gọi `init.sh`.
-- Work feature: `harness/work/<id>.json`.
-- Receipt chạy: chỉ ở `harness/work/receipts/`.
+- Optional repository bootstrap: root `init.mjs`; never create or call `init.sh`.
+- Feature work: `harness/work/<id>.json`.
+- Run receipts: only in `harness/work/receipts/`.
 
-## Quy trình bắt buộc
+## Required workflow
 
-1. Recon tree, git state, `AGENTS.md`, architecture, specs, plans và references.
-2. Xác định feature trong manifest và đọc spec canonical trước implementation.
-3. Giữ thay đổi trong scope feature và không làm yếu gate hiện có.
-4. Chạy `node harness/scripts/validate.mjs .` trước khi chuyển lifecycle.
-5. Chạy `node harness/scripts/run-checks.mjs . --profile quick` cho check an toàn.
-6. Chỉ dùng full check khi có approval tường minh cho từng effect.
-7. Ghi command/path/receipt evidence cụ thể vào work JSON.
-8. Cập nhật `nextAction` khi chưa xong; không bịa evidence.
+1. Recon the tree, git state, `AGENTS.md`, architecture, specs, plans, and references.
+2. Identify the feature in the manifest and read the canonical spec before implementation.
+3. Keep changes within the feature scope and do not weaken existing gates.
+4. Run `node harness/scripts/validate.mjs .` before advancing the lifecycle.
+5. Run `node harness/scripts/run-checks.mjs . --profile quick` for a safe check.
+6. Use the full check only with explicit approval for each effect.
+7. Record specific command/path/receipt evidence in the work JSON.
+8. Update `nextAction` when unfinished; do not invent evidence.
 
-Command verification đã cấu hình: {{VERIFICATION_COMMAND}}
+Configured verification command: {{VERIFICATION_COMMAND}}
 
 ## Invariant ownership
 
-- ID là lowercase kebab-case, duy nhất, và order manifest tăng nghiêm ngặt.
-- Prerequisite phải tồn tại, không tự trỏ; work active/blocked/completed cần hard
-  prerequisite đã completed.
-- Sequential cho phép tối đa một feature active hoặc blocked.
-- Mọi manifest entry đều là feature tracked Tier 2/3 và có đúng `spec: docs/specs/<id>.md`.
-- Acceptance ID trong work khớp chính xác spec; work không lặp prose.
-- `met: true` cần evidence cụ thể, tái lập được; completed cần completion object hợp lệ,
-  mọi acceptance met và có evidence.
-- Status là proposed, planned, active, blocked, completed, cancelled hoặc superseded.
-  Chỉ dùng blocked cho blocker thật, không dùng để bypass eligibility.
+- IDs are lowercase kebab-case, unique, and in strictly increasing manifest order.
+- Prerequisites must exist and cannot point to themselves; active/blocked/completed work requires hard
+  prerequisites to be completed.
+- Sequential allows at most one active or blocked feature.
+- Every manifest entry is a tracked Tier 2/3 feature and has exactly `spec: docs/specs/<id>.md`.
+- Acceptance IDs in work must match the spec exactly; work must not repeat the prose.
+- `met: true` requires specific, reproducible evidence; completed requires a valid completion object,
+  every acceptance met, and evidence.
+- Status is proposed, planned, active, blocked, completed, cancelled, or superseded.
+  Use blocked only for a real blocker, not to bypass eligibility.
 
-## Hợp đồng anti-cheat
+## Anti-cheat contract
 
-Không mark result met chỉ vì file tồn tại, code có vẻ đúng, command đã được thử hoặc
-output bị ẩn. Không đổi wording/ID acceptance, xóa check, im lặng stderr, bỏ qua exit
-status, shell injection, dùng `|| true`/`; true`, hoặc sửa validator để điều kiện chưa
-đạt thành đạt. Check fail hoặc thiếu phải vẫn visible. Thiếu proof thì đặt `met: false`
-và giải thích next action.
+Do not mark a result as met just because a file exists, the code appears correct, a command was
+tried, or output was hidden. Do not change acceptance wording/IDs, remove a check, silence stderr,
+ignore exit status, use shell injection, use `|| true`/`; true`, or modify the validator to turn an
+unmet condition into a met one. Failed or missing checks must remain visible. Without proof, set
+`met: false` and explain the next action.
 
-Không được xoá hay nới lỏng acceptance/check để một mục chuyển thành pass. Nếu acceptance sai, sửa ở đúng file sở hữu (docs/specs/<id>.md) trong cùng một thay đổi, ghi rõ lý do.
+Do not delete or loosen an acceptance/check to make an item pass. If an acceptance is incorrect,
+edit the owning file (docs/specs/<id>.md) in the same change and state the reason clearly.
 
-## Checklist recon
+## Recon checklist
 
-- Xác nhận root repository và boundary package trước khi sửa.
-- Đọc map này, rồi đọc map local gần nhất trong subtree sẽ đổi.
-- Inspect `ARCHITECTURE.md` nếu có; không đoán architecture từ filename.
-- Tìm constraint và quyết định cũ trong `docs/references/`.
-- Đọc spec feature và plan liên quan trước implementation.
-- Inspect status manifest, prerequisite order và evidence work hiện có.
-- Inspect check và effect trước command có thể đổi state.
-- Ưu tiên command hẹp nhất tạo được evidence spec yêu cầu.
+- Confirm the repository root and package boundary before making changes.
+- Read this map, then read the nearest local map in the subtree to be changed.
+- Inspect `ARCHITECTURE.md` if present; do not infer architecture from filenames.
+- Find constraints and prior decisions in `docs/references/`.
+- Read the feature spec and related plan before implementation.
+- Inspect manifest status, prerequisite order, and existing work evidence.
+- Inspect the check and effect before running a command that may change state.
+- Prefer the narrowest command that produces the evidence required by the spec.
 
-## Evidence và receipt
+## Evidence and receipts
 
-- Evidence nêu command, exit status, path hoặc receipt chính xác.
-- Receipt chứng minh check đã chạy; tự nó không chứng minh acceptance.
-- Giữ child output visible và bảo toàn stderr có ý nghĩa khi check fail.
-- Không đặt receipt vào source, docs hoặc thư mục tạm tùy ý.
-- Không báo dry-run là real-run hay command planned là đã chạy.
-- Gate không chạy được thì ghi blocker và next action, không đoán.
+- Evidence states the exact command, exit status, path, or receipt.
+- A receipt proves that a check ran; by itself, it does not prove acceptance.
+- Keep child output visible and preserve meaningful stderr when a check fails.
+- Do not put receipts in source, docs, or arbitrary temporary directories.
+- Do not report a dry-run as a real run or a planned command as having run.
+- If a gate cannot run, record the blocker and next action; do not guess.
 
-## Ranh giới review
+## Review boundaries
 
-- Review lỗi unknown-key, prerequisite, lifecycle và acceptance correspondence trước.
-- Validator fail là stop condition, không phải lời mời bypass.
-- Giữ assumption local trong reference hoặc spec có path cụ thể.
-- Chỉ cập nhật map khi tree canonical hoặc operating contract thay đổi.
+- Review unknown-key, prerequisite, lifecycle, and acceptance-correspondence errors first.
+- A validator failure is a stop condition, not an invitation to bypass.
+- Keep local assumptions in a reference or spec with a specific path.
+- Update the map only when the canonical tree or operating contract changes.
 
-## Ghi chú thay đổi
+## Change notes
 
-Ưu tiên commit nhỏ, dễ review và dẫn file/command. Giữ file hiện hữu; creator là
-missing-only và không overwrite. Gặp layout cũ `.agents/harness` hoặc `cairn` thì dừng
-và lấy approval tường minh `--migrate-old-layout`. Action đó thêm file canonical v2 và
-để dữ liệu cũ cho review có chủ đích.
+Prefer small, easy-to-review commits that reference files/commands. Keep existing files; the
+creator is missing-only and does not overwrite. If you encounter the old `.agents/harness` or
+`cairn` layout, stop and obtain explicit approval with `--migrate-old-layout`. That action adds
+canonical v2 files and leaves old data for deliberate review.
