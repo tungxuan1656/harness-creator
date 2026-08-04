@@ -28,7 +28,7 @@ For simple work, an inline note is enough. Do not force a formal plan on every t
 ## Before writing
 
 Confirm:
-- The user-visible outcome and how to verify it
+- The user-visible outcome and any useful optional way to verify it
 - What is in scope and what is not
 - Known risks or constraints
 
@@ -38,10 +38,10 @@ Ask concise clarifying questions if these are unclear.
 
 A good plan is self-contained and executable without the original conversation:
 
-1. **Outcome** — what changes and how a human would verify it
+1. **Outcome** — what changes and how a human could optionally verify it
 2. **Scope** — in-scope and explicitly out-of-scope
 3. **Steps** — bite-sized tasks (one action each, in order)
-4. **Verification** — concrete command or check per step, plus a final verification
+4. **Verification support** — optional concrete command or check per step, plus an optional final verification
 5. **Risks / rollback** — what could go wrong and how to recover
 6. **Open decisions** — anything still unresolved
 
@@ -49,17 +49,18 @@ A good plan is self-contained and executable without the original conversation:
 
 - Use exact file paths — no placeholders like `TBD` or `fill in later`
 - One step = one action. If a step covers two independent things, split it.
-- Prefer test-first steps for behavior changes
-- **Every step must have its own done condition** — a concrete, runnable command or check
-  that proves this specific step is complete. "Implemented" is not a done condition.
-  "Running `node --test test/foo.test.js` passes" is.
-- The done condition must be verifiable end-to-end, not just "the code looks right".
+- Prefer test-first steps for behavior changes when that improves confidence.
+- **Every step must have its own done condition** — a concrete observable result or, when useful,
+  a runnable command/check that confirms this specific step. "Implemented" is not a done condition.
+  "Running `node --test test/foo.test.js` passes" is one example.
+- The done condition should be verifiable end-to-end when verification is available; a planned
+  verification command is not a prerequisite for the feature owner to close the work.
 
 ## Self-review before handing off
 
 - Does every requirement map to a step?
 - Are all file paths and command names consistent?
-- Is there a concrete verification artifact?
+- Is there a concrete optional verification artifact where one would improve confidence?
 - Can someone execute this plan cold, without the chat history?
 
 ## After writing

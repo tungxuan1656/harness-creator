@@ -14,11 +14,13 @@
 
 ## Acceptance criteria
 
-Use stable lowercase IDs. Keep IDs when changing wording; add IDs only for new gates. The validator
-parses the following `- [id] text` lines.
+Use stable lowercase IDs. Keep IDs when changing wording; add IDs only for new conditions. The
+validator parses the following `- [id] text` lines. Acceptance criteria are planning and optional
+verification guidance; they help define the work but do not prevent the feature owner from closing
+it when the owner decides it is done.
 
-- [a1] <Acceptance condition that can be tested and has observable evidence.>
-- [a2] <Second test condition if needed.>
+- [a1] <Acceptance condition that can be tested and has observable evidence when verified.>
+- [a2] <Second useful condition if needed.>
 
 ## Out of scope
 
@@ -26,4 +28,5 @@ parses the following `- [id] text` lines.
 
 ## Evidence notes
 
-<Command, path, fixture, or receipt that can prove each acceptance result.>
+<Optional command, path, fixture, or receipt that can support each acceptance result. No evidence or
+explanation is required for the owner to close the feature.>

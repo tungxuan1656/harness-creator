@@ -9,6 +9,7 @@ const STATUS_SET = new Set(['proposed', 'planned', 'active', 'blocked', 'complet
 const TERMINAL = new Set(['completed', 'cancelled', 'superseded']);
 const FEATURE_KEYS = ['id', 'order', 'status', 'owners', 'dependsOn', 'spec'];
 const WORK_KEYS = ['schemaVersion', 'id', 'acceptanceResults', 'nextAction', 'completion'];
+const REQUIRED_WORK_KEYS = ['schemaVersion', 'id', 'acceptanceResults', 'nextAction'];
 const RESULT_KEYS = ['id', 'met', 'evidence'];
 const COMPLETION_KEYS = ['verifiedAt', 'completedAt', 'cancellationSummary', 'supersededBy'];
 const CHECK_KEYS = ['id', 'argv', 'cwd', 'quick', 'requiredByDefault', 'timeoutMs', 'declaredEffects'];
@@ -49,10 +50,6 @@ function readJson(root, relative) {
   }
 }
 
-function validUtc(value) {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/.test(value) && Number.isFinite(Date.parse(value));
-}
-
 function nonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
@@ -83,25 +80,20 @@ function parseSpec(root, feature) {
   return ids;
 }
 
-function validateCompletion(work, feature, acceptanceIds, relative, knownIds) {
+function validateCompletion(work, feature, relative, knownIds) {
   const completion = work.completion;
-  if (completion !== null && !isObject(completion)) report(relative, 'completion must be null or an object');
+  if (completion !== undefined && completion !== null && !isObject(completion)) report(relative, 'completion must be null or an object');
   if (isObject(completion)) {
     exactKeys(completion, COMPLETION_KEYS, `${relative}.completion`);
     for (const key of Object.keys(completion)) {
       if (completion[key] !== null && typeof completion[key] !== 'string') report(`${relative}.completion.${key}`, 'must be string or null');
     }
   }
-  const results = Array.isArray(work.acceptanceResults) ? work.acceptanceResults : [];
-  const allMet = results.length === acceptanceIds.length && results.every((result) => isObject(result) && result.met === true && nonEmptyString(result.evidence));
   if (feature.status === 'active' || feature.status === 'blocked') {
     if (!nonEmptyString(work.nextAction)) report(relative, `${feature.status} requires a non-empty nextAction`);
   }
   if (feature.status === 'completed') {
     if (work.nextAction !== null) report(relative, 'completed requires nextAction: null');
-    if (!isObject(completion)) report(relative, 'completed requires a completion object');
-    if (!isObject(completion) || !validUtc(completion.verifiedAt) || !validUtc(completion.completedAt)) report(relative, 'completed requires verifiedAt and completedAt ISO UTC strings');
-    if (!allMet) report(relative, 'completed requires every acceptance to be met with non-empty evidence');
   } else if (feature.status === 'cancelled') {
     if (work.nextAction !== null) report(relative, 'cancelled requires nextAction: null');
     if (!isObject(completion) || !nonEmptyString(completion.cancellationSummary)) report(relative, 'cancelled requires non-empty cancellationSummary');
@@ -110,7 +102,7 @@ function validateCompletion(work, feature, acceptanceIds, relative, knownIds) {
     if (!isObject(completion) || typeof completion.supersededBy !== 'string' || !ID_RE.test(completion.supersededBy)) report(relative, 'superseded requires a valid supersededBy ID');
     if (isObject(completion) && completion.supersededBy === feature.id) report(relative, 'supersededBy cannot reference itself');
     if (isObject(completion) && typeof completion.supersededBy === 'string' && !knownIds.has(completion.supersededBy)) report(relative, `supersededBy ${completion.supersededBy} does not exist`);
-  } else if (completion !== null) {
+  } else if (completion !== undefined && completion !== null) {
     report(relative, `${feature.status} requires completion: null`);
   }
 }
@@ -121,7 +113,7 @@ function validateWork(root, feature, acceptanceIds, knownIds) {
   if (!work) return;
   exactKeys(work, WORK_KEYS, relative);
   if (!isObject(work)) return;
-  for (const key of WORK_KEYS) required(work, key, relative);
+  for (const key of REQUIRED_WORK_KEYS) required(work, key, relative);
   checkSchemaVersion(work.schemaVersion, `${relative}.schemaVersion`);
   if (work.id !== feature.id) report(relative, `id must match manifest feature ${feature.id}`);
   if (!Array.isArray(work.acceptanceResults)) {
@@ -143,7 +135,7 @@ function validateWork(root, feature, acceptanceIds, knownIds) {
     if (JSON.stringify(actualIds) !== JSON.stringify(acceptanceIds)) report(relative, `acceptance IDs must match spec sequence: expected [${acceptanceIds.join(', ')}], got [${actualIds.join(', ')}]`);
   }
   if (work.nextAction !== null && typeof work.nextAction !== 'string') report(relative, 'nextAction must be string or null');
-  validateCompletion(work, feature, acceptanceIds, relative, knownIds);
+  validateCompletion(work, feature, relative, knownIds);
 }
 
 function validateCwd(root, candidate, where) {

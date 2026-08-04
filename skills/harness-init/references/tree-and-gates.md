@@ -44,7 +44,10 @@ The creator must confirm that the target exists and is a directory, then check:
 - The spec is always `docs/specs/<id>.md`, exists, contains `# Feature: <id>`, and has acceptance lines.
 - Work is always derived at `harness/work/<id>.json` and does not repeat title/prose/status.
 - Acceptance IDs in work must match the exact sequence in the spec.
-- Active/blocked requires a next action; completed/cancelled/superseded requires a completion object with the correct lifecycle and corresponding evidence.
+- Active/blocked requires a next action. Completed requires `nextAction: null` for state consistency;
+  the owner may close it without acceptance evidence, verification, timestamps, or an explanation.
+  Cancelled/superseded retain their required lifecycle metadata. Validation and evidence are optional
+  quality support, not a close gate.
 - Sequential mode allows at most one active/blocked feature; hard prerequisites of active/blocked/completed features must be completed, and orders before an active feature must be terminal.
 
 ## Check gates

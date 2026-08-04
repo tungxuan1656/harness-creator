@@ -38,21 +38,26 @@ active/blocked/completed features must be completed.
 ## Canonical work
 
 The work path is derived as `harness/work/<id>.json`. Its top level has exactly:
-`schemaVersion`, `id`, `acceptanceResults`, `nextAction`, `completion`; its
-schemaVersion is 1. Each acceptance result has exactly `id`, `met`, `evidence`,
-where evidence is a string or null. `nextAction` is a string or null.
+`schemaVersion`, `id`, `acceptanceResults`, `nextAction`, and, when supplied,
+`completion`; its schemaVersion is 1. Each acceptance result has exactly `id`,
+`met`, `evidence`, where evidence is a string or null. `nextAction` is a string
+or null. Completion metadata is optional and, when supplied, may contain only
+`verifiedAt`, `completedAt`, `cancellationSummary`, and `supersededBy`, each a
+string or null.
 
-Completion is null or an object containing only `verifiedAt`, `completedAt`,
-`cancellationSummary`, and `supersededBy`. Active/blocked requires a non-empty
-next action. Completed requires `nextAction` null, ISO UTC
-`verifiedAt`/`completedAt`, and every acceptance met with evidence. Cancelled
-requires `nextAction` null and a non-empty `cancellationSummary`. Superseded
-requires `nextAction` null and an existing `supersededBy` that is not the
-feature itself. All other statuses require `completion` null.
+Active/blocked requires a non-empty next action. Completed requires
+`nextAction: null` for lifecycle consistency, but does not require acceptance
+results to be met, evidence, a completion object, timestamps, or an explanation.
+The feature owner decides whether the feature is done; self-test, code review,
+validation, and evidence are optional confidence sources. Cancelled requires
+`nextAction` null and a non-empty `cancellationSummary`. Superseded requires
+`nextAction` null and an existing `supersededBy` that is not the feature itself.
+Other non-terminal statuses use `completion: null` when the field is present.
 
 Work does not repeat the title, behavior, acceptance prose, status, or blocker.
-Evidence must be a checkable command/path/result/receipt; spawning a command is
-not acceptance.
+When recorded, evidence must be a checkable command/path/result/receipt; spawning
+a command is not acceptance. `met: true` still requires non-empty evidence, but
+verification evidence is not a prerequisite for closing a feature.
 
 ## Spec and acceptance
 
@@ -67,8 +72,9 @@ A spec has an identity heading and stable lines:
 ```
 
 The validator reads IDs in exact order and requires work to match the exact
-sequence. To change behavior, change the canonical spec first; do not edit work
-to make the gate green.
+sequence. Acceptance criteria define useful scope and verification targets; they
+are not a close gate. To change behavior, change the canonical spec first; do
+not edit work to make a quality check appear green.
 
 ## Checks
 

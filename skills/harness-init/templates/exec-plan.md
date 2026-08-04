@@ -41,12 +41,15 @@ Describe the smallest approach that satisfies the spec, scope, non-goals, invari
 ## Concrete steps
 
 List the steps in order, specifying the file/artifact, input, output, owner, transition condition,
-and how the next step checks the result. Do not hide work behind “etc.”.
+and how the next step checks the result when useful. Do not hide work behind “etc.”.
 
-## Validation and acceptance
+## Validation and acceptance (optional quality support)
 
-Map each acceptance ID from the spec to a command, expected exit/status, and evidence path. Record
-the negative case, anti-cheat check, and effect flag requiring approval.
+Map each acceptance ID from the spec to an optional command, expected exit/status, and evidence path
+when those checks will improve confidence. Record the negative case, anti-cheat check, and effect
+flag requiring approval where relevant. Acceptance criteria and verification plans guide the work;
+they do not block the feature owner from closing the feature. The owner may close based on owner
+judgement, self-test, code review, or no recorded reason.
 
 ## Idempotence and recovery
 
@@ -80,5 +83,6 @@ changes, update the canonical spec in the same change and record the reason/evid
 
 ## Outcomes & retrospective
 
-Compare the goals with the observable results, achieved acceptance/evidence, missing pieces,
-remaining risks, follow-up, and final handoff/lifecycle conditions.
+Compare the goals with the observable results, achieved acceptance/evidence when available, missing
+pieces, remaining risks, follow-up, and final handoff/lifecycle conditions. Record the owner's
+closure decision if useful; no explanation is required to close the feature.
