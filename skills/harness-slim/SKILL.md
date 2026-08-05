@@ -1,5 +1,5 @@
 ---
-name: harness-creator
+name: harness-slim
 description: >-
   Build, audit, and improve harnesses that make AI coding agents reliable: AGENTS.md
   instruction files, feature/state tracking, verification gates, scope boundaries, session
@@ -11,7 +11,7 @@ description: >-
 license: MIT
 ---
 
-# Harness Creator
+# Harness Slim
 
 Make a repository easier for coding agents to start, stay in scope, verify work, and resume across sessions. Keep the harness small enough that agents actually follow it.
 
@@ -40,7 +40,7 @@ Every useful coding-agent harness has five subsystems:
 ### Create a harness
 
 ```bash
-node skills/harness-creator/scripts/create-harness.mjs --target /path/to/project
+node skills/harness-slim/scripts/create-harness.mjs --target /path/to/project
 ```
 
 Options:
@@ -53,7 +53,7 @@ Explain what was created and how to replace placeholder feature entries.
 ### Check harness state
 
 ```bash
-bash skills/harness-creator/scripts/check-state.sh /path/to/project/feature_index.json
+bash skills/harness-slim/scripts/check-state.sh /path/to/project/feature_index.json
 ```
 
 Shows active/blocked/todo features and overall progress. Run before starting a new feat or after marking one done.
@@ -61,7 +61,7 @@ Shows active/blocked/todo features and overall progress. Run before starting a n
 ### Audit an existing harness
 
 ```bash
-node skills/harness-creator/scripts/validate-harness.mjs --target /path/to/project
+node skills/harness-slim/scripts/validate-harness.mjs --target /path/to/project
 ```
 
 Reports five subsystem scores, lowest-scoring area, and first 2–3 changes that would improve reliability.
@@ -69,8 +69,8 @@ Reports five subsystem scores, lowest-scoring area, and first 2–3 changes that
 ### Produce a report
 
 ```bash
-node skills/harness-creator/scripts/render-assessment-html.mjs --target /path/to/project
-node skills/harness-creator/scripts/run-benchmark.mjs --target /path/to/project --html /path/to/report.html
+node skills/harness-slim/scripts/render-assessment-html.mjs --target /path/to/project
+node skills/harness-slim/scripts/run-benchmark.mjs --target /path/to/project --html /path/to/report.html
 ```
 
 Structural benchmark only. Real effectiveness needs before/after agent sessions on representative tasks.

@@ -1,4 +1,4 @@
-# harness-creator
+# harness-slim
 
 A single skill for making AI coding agents reliable.
 
@@ -69,20 +69,20 @@ Every useful coding-agent harness has five subsystems:
 
 ## Install
 
-### Via `npx skills` (harness-creator only)
+### Via `npx skills` (harness-slim only)
 
 ```bash
-npx skills add tungxuan1656/harness-creator --skill harness-creator
+npx skills add tungxuan1656/harness-slim --skill harness-slim
 ```
 
 ### Clone for all bundled skills
 
-To get `harness-creator` plus the 10 companion skills in one go, clone the repo and copy the `skills/` folder:
+To get `harness-slim` plus the 10 companion skills in one go, clone the repo and copy the `skills/` folder:
 
 ```bash
-git clone https://github.com/tungxuan1656/harness-creator /tmp/harness-creator
+git clone https://github.com/tungxuan1656/harness-slim /tmp/harness-slim
 mkdir -p .agents/skills
-cp -R /tmp/harness-creator/skills/* .agents/skills/
+cp -R /tmp/harness-slim/skills/* .agents/skills/
 ```
 
 ---
@@ -91,16 +91,16 @@ cp -R /tmp/harness-creator/skills/* .agents/skills/
 
 ```bash
 # Create a harness in a project
-node skills/harness-creator/scripts/create-harness.mjs --target /path/to/project
+node skills/harness-slim/scripts/create-harness.mjs --target /path/to/project
 
 # Check current harness state
-bash skills/harness-creator/scripts/check-state.sh /path/to/project/feature_index.json
+bash skills/harness-slim/scripts/check-state.sh /path/to/project/feature_index.json
 
 # Validate harness structure (five-subsystem score)
-node skills/harness-creator/scripts/validate-harness.mjs --target /path/to/project
+node skills/harness-slim/scripts/validate-harness.mjs --target /path/to/project
 
 # HTML assessment report
-node skills/harness-creator/scripts/run-benchmark.mjs --target /path/to/project --html report.html
+node skills/harness-slim/scripts/run-benchmark.mjs --target /path/to/project --html report.html
 ```
 
 Options for `create-harness.mjs`:
@@ -139,7 +139,7 @@ Node.js 20+ is required for the scripts (`create-harness.mjs`, `validate-harness
 
 ## Optional companion skills
 
-`harness-creator` is intentionally slim — it works standalone and has no dependencies on the skills below. The companions are optional: pick what fits your workflow.
+`harness-slim` is intentionally slim — it works standalone and has no dependencies on the skills below. The companions are optional: pick what fits your workflow.
 
 All skills live in `skills/`. To use any of them, copy the relevant folder into your project's `.agents/skills/` (or wherever your agent tool expects them).
 

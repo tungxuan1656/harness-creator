@@ -1,4 +1,4 @@
-# harness-creator
+# harness-slim
 
 Compact skill for building and auditing harnesses around AI coding agents.
 
@@ -7,25 +7,25 @@ Provides five things agents need: instructions, state, verification, scope bound
 ## Install
 
 ```bash
-npx skills add walkinglabs/learn-harness-engineering --skill harness-creator
+npx skills add tungxuan1656/harness-slim --skill harness-slim
 ```
 
-Or copy `skills/harness-creator/` into your skill path.
+Or copy `skills/harness-slim/` into your skill path.
 
 ## Use
 
 ```bash
 # Create harness
-node skills/harness-creator/scripts/create-harness.mjs --target /path/to/project
+node skills/harness-slim/scripts/create-harness.mjs --target /path/to/project
 
 # Check harness state
-bash skills/harness-creator/scripts/check-state.sh /path/to/project/feature_index.json
+bash skills/harness-slim/scripts/check-state.sh /path/to/project/feature_index.json
 
 # Validate structure
-node skills/harness-creator/scripts/validate-harness.mjs --target /path/to/project
+node skills/harness-slim/scripts/validate-harness.mjs --target /path/to/project
 
 # HTML report
-node skills/harness-creator/scripts/run-benchmark.mjs --target /path/to/project --html /path/to/report.html
+node skills/harness-slim/scripts/run-benchmark.mjs --target /path/to/project --html /path/to/report.html
 ```
 
 Scripts use only Node.js built-ins (plus `check-state.sh` which uses grep/sed only).
@@ -74,7 +74,7 @@ Score is structural. Does not replace real before/after agent-session testing.
 ## Files
 
 ```text
-harness-creator/
+harness-slim/
 ├── SKILL.md
 ├── metadata.json
 ├── agents/openai.yaml

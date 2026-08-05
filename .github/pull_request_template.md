@@ -10,11 +10,11 @@
 
 <!-- Include exact commands and results. -->
 
-- [ ] `node --check skills/harness-creator/scripts/create-harness.mjs`
-- [ ] `node --check skills/harness-creator/scripts/validate-harness.mjs`
-- [ ] `node --check skills/harness-creator/scripts/lib/harness-utils.mjs`
-- [ ] `bash -n skills/harness-creator/scripts/check-state.sh`
-- [ ] `bash -n skills/harness-creator/templates/init.sh`
+- [ ] `node --check skills/harness-slim/scripts/create-harness.mjs`
+- [ ] `node --check skills/harness-slim/scripts/validate-harness.mjs`
+- [ ] `node --check skills/harness-slim/scripts/lib/harness-utils.mjs`
+- [ ] `bash -n skills/harness-slim/scripts/check-state.sh`
+- [ ] `bash -n skills/harness-slim/templates/init.sh`
 - [ ] End-to-end harness creation + validation scores 100/100
 
 ## Checklist

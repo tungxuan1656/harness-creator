@@ -1,5 +1,5 @@
 {
-  "name": "harness-creator",
+  "name": "harness-slim",
   "version": "1.0.0",
   "description": "Harness engineering for AI coding agents — five subsystems, memory persistence, session continuity, verification workflows, scope control, lifecycle management.",
   "license": "MIT",
