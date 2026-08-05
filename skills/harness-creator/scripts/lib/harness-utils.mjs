@@ -221,10 +221,10 @@ export function scoreHarness(files) {
   const byPath = new Map(files.map((file) => [file.path, file.content]));
   const allText = files.map((file) => `${file.path}\n${file.content}`).join('\n\n');
   const agents = byPath.get('AGENTS.md') || byPath.get('CLAUDE.md') || '';
-  const featureList = byPath.get('feature_list.json') || byPath.get('feature-list.json') || '';
+  const featureList = byPath.get('feature_index.json') || byPath.get('feature_list.json') || byPath.get('feature-list.json') || '';
   const progress = byPath.get('progress.md') || '';
   const init = byPath.get('init.sh') || '';
-  const handoff = byPath.get('session-handoff.md') || '';
+  const handoff = '';
 
   const checks = {
     instructions: [
@@ -232,14 +232,14 @@ export function scoreHarness(files) {
       structuredHas(agents, ['Startup Workflow', 'Before writing code'], 'Startup workflow documented'),
       structuredHas(agents, ['Definition of Done', 'done only when'], 'Definition of done documented'),
       structuredHas(agents, ['Verification Commands', './init.sh', 'test', 'verify'], 'Verification commands discoverable'),
-      structuredHas(agents, ['feature_list.json', 'progress.md'], 'State artifacts routed from instructions')
+      structuredHas(agents, ['feature_index.json', 'features/', 'progress.md'], 'State artifacts routed from instructions')
     ],
     state: [
-      hasFile(byPath, ['feature_list.json', 'feature-list.json'], 'Feature tracker exists'),
-      jsonFeatureList(featureList, 'Feature tracker is valid and has feature fields'),
+      hasFile(byPath, ['feature_index.json', 'feature_list.json', 'feature-list.json'], 'Feature index exists'),
+      jsonFeatureList(featureList, 'Feature index is valid and has required fields'),
       hasFile(byPath, ['progress.md'], 'Progress log exists'),
-      structuredHas(progress, ['Current State', 'What', 'Next'], 'Progress log supports restart'),
-      structuredHas(handoff || progress, ['Blockers', 'Files', 'Next Session'], 'Handoff captures blockers/files/next step')
+      structuredHas(progress, ['Status', 'Done', 'Next'], 'Progress log supports restart'),
+      textHas(allText, ['features/', 'feat-0', 'Done Criteria', 'Objective'], 'Feature detail files present')
     ],
     verification: [
       hasFile(byPath, ['init.sh'], 'Verification entrypoint exists'),
@@ -250,7 +250,7 @@ export function scoreHarness(files) {
     ],
     scope: [
       structuredHas(agents, ['One feature at a time', 'one-feature-at-a-time'], 'One-feature-at-a-time rule exists'),
-      textHas(featureList, ['dependencies'], 'Feature dependencies are tracked'),
+      textHas(featureList, ['dependencies', 'depends_on'], 'Feature dependencies are tracked'),
       textHas(agents + featureList, ['status'], 'Feature status is explicit'),
       structuredHas(agents, ['Stay in scope', 'scope'], 'Scope boundary documented'),
       structuredHas(agents, ['Definition of Done'], 'Completion gate limits scope closure')
@@ -258,9 +258,9 @@ export function scoreHarness(files) {
     lifecycle: [
       hasFile(byPath, ['init.sh'], 'Startup script exists'),
       structuredHas(agents, ['End of Session', 'Before ending'], 'End-of-session procedure exists'),
-      hasFile(byPath, ['session-handoff.md'], 'Session handoff template exists'),
-      structuredHas(progress + '\n' + handoff, ['Last Updated', 'Current Objective', 'Recommended Next Step'], 'Session restart markers exist'),
-      textHas(agents + init, ['restartable', 'clean', 'Next steps'], 'Clean restart path documented')
+      textHas(init, ['quick', 'full', 'MODE'], 'init.sh supports quick and full modes'),
+      structuredHas(progress, ['Status', 'Done', 'Next'], 'Progress log has restart markers'),
+      textHas(agents + init, ['restartable', 'clean', 'Next step', 'Prepend', 'PREPEND'], 'Clean restart path documented')
     ]
   };
 
@@ -323,8 +323,7 @@ function jsonFeatureList(text, message) {
     const parsed = JSON.parse(text);
     const valid = Array.isArray(parsed.features) && parsed.features.every((feature) =>
       typeof feature.id === 'string'
-      && typeof feature.name === 'string'
-      && typeof feature.description === 'string'
+      && (typeof feature.title === 'string' || typeof feature.name === 'string')
       && typeof feature.status === 'string'
     );
     return { pass: valid, message };
@@ -337,10 +336,10 @@ export async function loadHarnessFiles(root) {
   const candidates = [
     'AGENTS.md',
     'CLAUDE.md',
+    'feature_index.json',
     'feature_list.json',
     'feature-list.json',
     'progress.md',
-    'session-handoff.md',
     'init.sh'
   ];
   const files = [];
@@ -350,6 +349,16 @@ export async function loadHarnessFiles(root) {
       files.push({ path: candidate, content: await readText(fullPath) });
     }
   }
+  // Load feature detail files for scoring
+  const featuresDir = path.join(root, 'features');
+  try {
+    const { readdir } = await import('node:fs/promises');
+    const entries = await readdir(featuresDir);
+    for (const entry of entries.filter((e) => e.endsWith('.md'))) {
+      const fullPath = path.join(featuresDir, entry);
+      files.push({ path: `features/${entry}`, content: await readText(fullPath) });
+    }
+  } catch { /* features/ dir may not exist yet */ }
   return files;
 }
 

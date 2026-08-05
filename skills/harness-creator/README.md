@@ -1,8 +1,8 @@
 # harness-creator
 
-A compact skill for building and auditing harnesses around AI coding agents.
+Compact skill for building and auditing harnesses around AI coding agents.
 
-It helps a repository provide five things agents need: instructions, state, verification, scope boundaries, and lifecycle handoff.
+Provides five things agents need: instructions, state, verification, scope boundaries, and lifecycle handoff.
 
 ## Install
 
@@ -15,34 +15,50 @@ Or copy `skills/harness-creator/` into your skill path.
 ## Use
 
 ```bash
+# Create harness
 node skills/harness-creator/scripts/create-harness.mjs --target /path/to/project
+
+# Check harness state
+bash skills/harness-creator/scripts/check-state.sh /path/to/project/feature_index.json
+
+# Validate structure
 node skills/harness-creator/scripts/validate-harness.mjs --target /path/to/project
+
+# HTML report
 node skills/harness-creator/scripts/run-benchmark.mjs --target /path/to/project --html /path/to/report.html
 ```
 
-The scripts use only Node.js built-in modules. They can be run after copying the skill directory into another repository.
+Scripts use only Node.js built-ins (plus `check-state.sh` which uses grep/sed only).
 
 ## What It Creates
 
-- `AGENTS.md` or `CLAUDE.md`
-- `feature_list.json`
-- `progress.md`
-- `init.sh`
-- `session-handoff.md`
+| File | Purpose |
+|---|---|
+| `AGENTS.md` | Agent instructions: startup, rules, behavioral guidelines, done definition |
+| `feature_index.json` | Minimal feature index: id, title, status, priority, depends_on |
+| `features/feat-001.md` | Feature detail placeholder: objective, done criteria, plan, evidence |
+| `init.sh` | Health check script with `quick` (default) and `full` modes |
+| `progress.md` | Append-only session log |
+| `check-state.sh` | Show active/blocked/todo features and progress count |
 
-`create-harness.mjs` detects common project types and package managers. It supports Node/npm/pnpm/yarn/bun, Python, Go, Rust, Maven, Gradle, and .NET at a basic verification-command level.
+## init.sh modes
 
-## What It Checks
+```bash
+./init.sh        # quick: type-check only, <5s — use at startup
+./init.sh full   # full: lint + type (parallel) + test — use before marking done
+```
 
-`validate-harness.mjs` scores the five harness subsystems:
+## What validate-harness Checks
 
-1. Instructions
-2. State
-3. Verification
-4. Scope
-5. Lifecycle
+Five subsystems scored 1–5:
 
-The score is structural. It tells you whether the harness is present and coherent; it does not replace real before/after agent-session testing.
+1. **Instructions** — AGENTS.md has startup workflow, done definition, verification commands
+2. **State** — feature_index.json valid, progress.md present, feature detail files exist
+3. **Verification** — init.sh present and has quick/full modes
+4. **Scope** — one-feature rule, done criteria, depends_on tracked
+5. **Lifecycle** — end-of-session procedure, append-only progress log
+
+Score is structural. Does not replace real before/after agent-session testing.
 
 ## Status
 
@@ -51,7 +67,8 @@ The score is structural. It tells you whether the harness is present and coheren
 - [x] HTML assessment report
 - [x] Structural benchmark report
 - [x] 10 eval cases
-- [x] Generic verification detection for common stacks
+- [x] Generic verification detection for common stacks (Node/Python/Go/Rust/Maven/Gradle/.NET)
+- [x] check-state.sh for runtime harness state
 - [ ] Optional real before/after agent-session replay
 
 ## Files
@@ -66,18 +83,23 @@ harness-creator/
 │   ├── validate-harness.mjs
 │   ├── render-assessment-html.mjs
 │   ├── run-benchmark.mjs
+│   ├── check-state.sh
 │   └── lib/harness-utils.mjs
 ├── templates/
 │   ├── agents.md
-│   ├── feature-list.json
-│   ├── feature-list.schema.json
+│   ├── feature_index.json
+│   ├── features/
+│   │   └── feat-001.md
 │   ├── init.sh
-│   ├── progress.md
-│   └── session-handoff.md
+│   └── progress.md
 ├── references/
+│   ├── context-engineering-pattern.md
+│   ├── gotchas.md
+│   ├── memory-persistence-pattern.md
+│   └── multi-agent-pattern.md
 └── evals/evals.json
 ```
 
 ## Boundaries
 
-This skill is for harness engineering, not model selection, prompt tuning alone, or app architecture. Keep project-specific facts in the target repository.
+Harness engineering only. Not for model selection, prompt tuning alone, or app architecture. Keep project-specific facts in the target repository.

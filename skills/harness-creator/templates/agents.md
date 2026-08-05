@@ -1,68 +1,125 @@
-# {{AGENT_FILE_NAME}}
+# AGENTS.md
 
 {{PROJECT_PURPOSE}}
 
-## Startup Workflow
+Stack: [language + version]
+Verify (quick): `./init.sh`
+Verify (full):  `./init.sh full`
 
-Before writing code:
+## When to Run This Workflow
 
-1. **Confirm working directory** with `pwd`
-2. **Read this file** completely
-3. **Read project docs if present** (`docs/ARCHITECTURE.md`, `docs/PRODUCT.md`, README, or equivalent)
-4. **Run `./init.sh`** to verify environment is healthy
-5. **Read `feature_list.json`** to see current feature state
-6. **Review recent commits** with `git log --oneline -5`
+**Skip for:** questions about the project, code review, one-off lookups.
 
-If baseline verification is failing, repair that first before adding new scope.
+**Run for:** implementing features, fixing bugs, any code changes.
 
-## Working Rules
+## Startup Workflow (code work only)
 
-- **One feature at a time**: Pick exactly one unfinished feature from `feature_list.json`
-- **Verification required**: Don't claim done without running verification commands
-- **Update artifacts**: Before ending session, update `progress.md` and `feature_list.json`
-- **Stay in scope**: Don't modify files unrelated to the current feature
-- **Leave clean state**: Next session must be able to run `./init.sh` immediately
+1. `./init.sh` — environment health check
+2. `git log --oneline -5` — recent state
+3. Read `feature_index.json` — find active feat
+4. Read `features/<active-id>.md` — objective + done criteria
+5. Read first 10 lines of `progress.md` — prior session context
 
-## Required Artifacts
+If baseline fails, repair it before adding new scope.
 
-- `feature_list.json` — Feature state tracker (source of truth)
-- `progress.md` — Session continuity log
-- `init.sh` — Standard startup and verification path
-- `session-handoff.md` — Optional, for larger sessions
+## Rules
+
+- **One feature at a time**: pick exactly one `active` feature from `feature_index.json`.
+- Run `./init.sh full` before marking any feature done.
+- Commit when feat done: `feat(feat-XXX): <description>`
+- WIP commit if session ends mid-feat: `wip(feat-XXX): <state>`
+- **Stay in scope**: no changes outside current feature. Respect `depends_on` dependencies order.
+- If baseline `./init.sh` fails, repair before adding new scope.
 
 ## Definition of Done
 
-A feature is done only when ALL of the following are true:
+A feature is done only when ALL are true:
 
-- [ ] Target behavior is implemented
-- [ ] Required verification actually ran (tests / lint / type-check)
-- [ ] Evidence recorded in `feature_list.json` or `progress.md`
-- [ ] Repository remains restartable from standard startup path
+- [ ] All done criteria in `features/<id>.md` checked
+- [ ] `./init.sh full` passes
+- [ ] Evidence recorded in `features/<id>.md`
+- [ ] Committed with descriptive message
+
+## Blockers
+
+Update `features/<id>.md`. Ask user.
 
 ## End of Session
 
-Before ending a session:
+1. Prepend new block to `progress.md` (never edit old blocks).
+2. Update status in `feature_index.json`.
+3. Commit.
 
-1. Update `progress.md` with current state
-2. Update `feature_list.json` with new feature status
-3. Record any unresolved risks or blockers
-4. Commit with descriptive message once work is in safe state
-5. Leave repo clean enough for next session to run `./init.sh` immediately
+---
 
 ## Verification Commands
 
 ```bash
-# Full verification (recommended)
-{{PRIMARY_VERIFICATION_COMMAND}}
+{{VERIFICATION_COMMANDS}}
 ```
 
-Required checks:
-{{VERIFICATION_COMMANDS}}
+---
+
+## Behavioral Guidelines
+
+Reduce common LLM coding mistakes.
+
+### Think Before Coding
+
+Don't assume. Don't hide confusion. Surface tradeoffs.
+
+- State assumptions explicitly. Uncertain: ask.
+- Multiple interpretations: present them, don't pick silently.
+- Simpler approach exists: say so. Push back when warranted.
+- Unclear: stop, name what's confusing, ask.
+
+### Simplicity First
+
+Minimum code that solves the problem. Nothing speculative.
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" not requested.
+- No error handling for impossible scenarios.
+- 200 lines could be 50: rewrite it.
+
+Ask: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+### Surgical Changes
+
+Touch only what you must. Clean up only your own mess.
+
+- Don't improve adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- Notice unrelated dead code: mention it, don't delete it.
+- Remove imports/variables/functions YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+Every changed line must trace directly to the request.
+
+### Goal-Driven Execution
+
+Define success criteria. Loop until verified.
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+Multi-step tasks: state brief plan before starting:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+```
+
+Strong criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+---
 
 ## Escalation
 
-If you encounter:
-- **Architecture decisions**: Consult project architecture docs if present, otherwise ask user
-- **Unclear requirements**: Check product/requirements docs if present, otherwise ask user
-- **Repeated test failures**: Update progress, flag for human review
-- **Scope ambiguity**: Re-read `feature_list.json` for definition of done
+- **Architecture decisions**: check `docs/` if present, otherwise ask user.
+- **Unclear requirements**: ask before implementing.
+- **Repeated failures**: update `features/<id>.md`, flag for human review.
+- **Scope ambiguity**: re-read `features/<id>.md` done criteria.
