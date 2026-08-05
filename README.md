@@ -69,17 +69,20 @@ Every useful coding-agent harness has five subsystems:
 
 ## Install
 
-### Via `npx skills`
+### Via `npx skills` (harness-creator only)
 
 ```bash
 npx skills add tungxuan1656/harness-creator --skill harness-creator
 ```
 
-### Manual
+### Clone for all bundled skills
+
+To get `harness-creator` plus the 10 companion skills in one go, clone the repo and copy the `skills/` folder:
 
 ```bash
+git clone https://github.com/tungxuan1656/harness-creator /tmp/harness-creator
 mkdir -p .agents/skills
-cp -R path/to/harness-creator/skills/harness-creator .agents/skills/
+cp -R /tmp/harness-creator/skills/* .agents/skills/
 ```
 
 ---
@@ -131,6 +134,27 @@ The agent works one feature at a time and does not move to the next unless instr
 ## Requirements
 
 Node.js 20+ is required for the scripts (`create-harness.mjs`, `validate-harness.mjs`). `check-state.sh` and `init.sh` require only bash, grep, and sed — no external dependencies.
+
+---
+
+## Bundled skills
+
+This repo ships 10 companion skills alongside `harness-creator`. They cover the full agent workflow — from design to execution to commit — and are curated to work well together on any repo.
+
+All skills live in `skills/`. Install them into your project's `.agents/skills/` (or wherever your agent tool expects them).
+
+| Skill | What it does | Source |
+|---|---|---|
+| [`brainstorming`](skills/brainstorming/) | Explore requirements and design before touching code — produces a spec, then hands off to `writing-plans` | [obra/superpowers](https://github.com/obra/superpowers) |
+| [`codebase-design`](skills/codebase-design/) | Shared vocabulary for designing deep modules: module, interface, depth, seam, adapter, leverage, locality | [mattpocock/skills](https://github.com/mattpocock/skills) |
+| [`writing-plans`](skills/writing-plans/) | Turn a spec into a bite-sized implementation plan with TDD steps, file map, and done criteria | [obra/superpowers](https://github.com/obra/superpowers) |
+| [`subagent-driven-development`](skills/subagent-driven-development/) | Execute a plan by dispatching one fresh subagent per task, with per-task review and a final whole-branch review | [obra/superpowers](https://github.com/obra/superpowers) |
+| [`executing-plans`](skills/executing-plans/) | Inline plan execution with review checkpoints — fallback when subagents are not available | [obra/superpowers](https://github.com/obra/superpowers) |
+| [`systematic-debugging`](skills/systematic-debugging/) | Four-phase debugging: root cause first, pattern analysis, hypothesis testing, then fix — never guess | [obra/superpowers](https://github.com/obra/superpowers) |
+| [`verification-before-completion`](skills/verification-before-completion/) | Evidence before claims — run the verification command, read the output, only then declare done | [obra/superpowers](https://github.com/obra/superpowers) |
+| [`git-commit`](skills/git-commit/) | Conventional commit messages auto-generated from diff — type, scope, description, safety rules | [github/awesome-copilot](https://github.com/github/awesome-copilot) |
+| [`handoff`](skills/handoff/) | Compact the current session into a handoff document so a fresh agent can resume without losing context | [mattpocock/skills](https://github.com/mattpocock/skills) |
+| [`find-skills`](skills/find-skills/) | Search and install skills from the open agent skills ecosystem at [skills.sh](https://skills.sh) | [vercel-labs/skills](https://github.com/vercel-labs/skills) |
 
 ---
 

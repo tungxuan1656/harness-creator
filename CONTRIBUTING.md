@@ -46,4 +46,4 @@ The end-to-end validation must score 100/100 with no bottleneck on an unmodified
 
 ## Scope
 
-This repo contains one skill: `harness-creator`. PRs should stay within that scope. If you have an idea for a separate skill, open an issue to discuss it first.
+This repo contains `harness-creator` and 10 curated companion skills. PRs should stay within those skills. For new companion skills, open an issue first to discuss whether they belong here. PRs touching companion skills should not modify their upstream source logic — only the integration notes or `SKILL.md` references that are specific to this harness.

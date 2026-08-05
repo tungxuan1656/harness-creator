@@ -112,3 +112,5 @@ Good interfaces make testing natural:
 
 - **Deepening a cluster given its dependencies** — see [DEEPENING.md](DEEPENING.md): dependency categories, seam discipline, and replace-don't-layer testing.
 - **Exploring alternative interfaces** — see [DESIGN-IT-TWICE.md](DESIGN-IT-TWICE.md): spin up parallel sub-agents to design the interface several radically different ways, then compare on depth, locality, and seam placement.
+
+> **Note:** The `improve-codebase-architecture` and `grill-me` skills are not included in this harness. Apply the principles in this skill directly or via `brainstorming` when designing module interfaces.
