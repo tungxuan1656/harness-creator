@@ -137,11 +137,11 @@ Node.js 20+ is required for the scripts (`create-harness.mjs`, `validate-harness
 
 ---
 
-## Bundled skills
+## Optional companion skills
 
-This repo ships 10 companion skills alongside `harness-creator`. They cover the full agent workflow — from design to execution to commit — and are curated to work well together on any repo.
+`harness-creator` is intentionally slim — it works standalone and has no dependencies on the skills below. The companions are optional: pick what fits your workflow.
 
-All skills live in `skills/`. Install them into your project's `.agents/skills/` (or wherever your agent tool expects them).
+All skills live in `skills/`. To use any of them, copy the relevant folder into your project's `.agents/skills/` (or wherever your agent tool expects them).
 
 | Skill | What it does | Source |
 |---|---|---|
