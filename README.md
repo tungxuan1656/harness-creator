@@ -158,6 +158,12 @@ All skills live in `skills/`. To use any of them, copy the relevant folder into 
 
 ---
 
+## Acknowledgments
+
+Special thanks to [walkinglabs/learn-harness-engineering](https://github.com/walkinglabs/learn-harness-engineering), which served as the original prototype and inspiration for this project.
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
