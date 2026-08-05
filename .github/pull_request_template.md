@@ -10,14 +10,15 @@
 
 <!-- Include exact commands and results. -->
 
-- [ ] `node --check skills/harness-init/scripts/create-harness.mjs`
-- [ ] `node --check skills/harness-init/templates/harness/scripts/validate.mjs`
-- [ ] `node --check skills/harness-init/templates/harness/scripts/run-checks.mjs`
-- [ ] `node --input-type=module --check < skills/harness-init/templates/init.mjs.tmpl`
-- [ ] Dry-run creator command completed without modifying the checkout
+- [ ] `node --check skills/harness-creator/scripts/create-harness.mjs`
+- [ ] `node --check skills/harness-creator/scripts/validate-harness.mjs`
+- [ ] `node --check skills/harness-creator/scripts/lib/harness-utils.mjs`
+- [ ] `bash -n skills/harness-creator/scripts/check-state.sh`
+- [ ] `bash -n skills/harness-creator/templates/init.sh`
+- [ ] End-to-end harness creation + validation scores 100/100
 
 ## Checklist
 
 - [ ] Documentation uses accurate paths and commands.
-- [ ] Structural `schemaVersion: 1` values were not changed as release versions.
-- [ ] No secrets, personal data, editor files, or unrelated generated artifacts are included.
+- [ ] No secrets, personal data, editor files, or unrelated generated artifacts included.
+- [ ] README updated if user-facing paths or usage changed.
