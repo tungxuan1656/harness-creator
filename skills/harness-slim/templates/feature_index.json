@@ -1,0 +1,18 @@
+{
+  "features": [
+    {
+      "id": "feat-001",
+      "title": "Project Setup",
+      "status": "todo",
+      "priority": 1,
+      "depends_on": []
+    },
+    {
+      "id": "feat-002",
+      "title": "First Feature",
+      "status": "todo",
+      "priority": 2,
+      "depends_on": ["feat-001"]
+    }
+  ]
+}

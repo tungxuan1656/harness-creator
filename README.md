@@ -1,212 +1,166 @@
-# harness-creator
+# harness-slim
 
-A skill package for AI coding agents. Provides a structured workflow harness
-and task-routing model for software repositories.
+A single skill for making AI coding agents reliable.
+
+Gives any repository the structure agents need to start consistently, stay in scope, verify their work, and resume across sessions — without heavy ceremony.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
 ## Why this exists
 
-The best agentic engineering teams have converged on the same insight: **agents
-fail not because they lack intelligence, but because they lack structure.**
+Agents fail not because they lack intelligence, but because they lack structure.
 
-Left alone, a coding agent will try to do too much at once, lose track of what
-was done between sessions, and silently move on when the codebase is already
-broken.
+Left alone, a coding agent will try to do too much at once, lose track of what was done between sessions, and silently move on when the codebase is already broken.
 
 The engineers at Anthropic and OpenAI documented these failure modes directly:
 
 - **Anthropic** — [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents): agents need an initializer to set up a feature checklist and a progress log, then work one feature at a time, always leaving a clean commit.
 - **Anthropic** — [Harness design for long-running application development](https://www.anthropic.com/engineering/harness-design-long-running-apps): separating planner, generator, and evaluator roles; using structured artifacts to hand off context across sessions.
 - **OpenAI** — [Using PLANS.md for multi-hour problem solving](https://developers.openai.com/cookbook/articles/codex_exec_plans): a written plan with verifiable per-step done conditions turns vague intent into executable, trackable work.
-- **Steve Krenzel / Logic Inc** — [AI is forcing us to write good code](https://bits.logic.inc/p/ai-is-forcing-us-to-write-good-code): agents need useful guardrails. Tests, coverage, small modules, and static typing can be rails the agent bounces off to find the right path.
 
-**This package applies those lessons** — but stripped down to the minimum that
-is universally useful across any repo, without forcing heavy ceremony on simple
-work.
+This skill applies those lessons — stripped to the minimum that works across any repo, without forcing heavy ceremony on simple work.
 
 ---
 
-## Design philosophy
+## What it creates
 
-### 1. One feature at a time
+Running `create-harness.mjs` in a project produces:
 
-The biggest failure mode Anthropic identified: agents try to implement
-everything at once, run out of context midway, and leave a half-implemented
-mess that the next session has to untangle. A quality checklist
-(`harness/checks.json`) where each entry starts `passes: false` helps keep work
-focused. The agent picks the highest-priority unchecked item, implements it,
-optionally verifies it, records any check result, commits, then stops.
-
-### 2. Verification as optional confidence support
-
-Verification can improve confidence: run a fresh, end-to-end check when it is
-useful and report what actually happened. It is not a close gate. **The feature
-owner decides when the feature is done**, based on owner judgement, self-test,
-code review, or no recorded reason. "The code looks right" is not a verification
-claim, but no verification claim is required to close a feature.
-
-### 3. Leave a clean state after every session
-
-The next session starts cold, with no memory of what happened. Agents must
-leave `harness/progress.md` updated and a clean git commit so the next session
-can orient in seconds rather than spending its context budget on archaeology.
-
-### 4. Structured JSON over prose for checklists
-
-Anthropic specifically noted: agents are less likely to inappropriately edit or
-overwrite JSON files compared to Markdown. `checks.json` is JSON for this
-reason. The `passes` field is the **only** field agents are allowed to change;
-it records optional check results and does not determine feature lifecycle
-closure.
-
-### 5. Choose just enough ceremony
-
-Not every task needs a plan. Not every change needs tracking. The `task-router`
-skill applies lightweight triage: simple reversible work → no artifacts, just do
-it. Multi-session or high-risk work → tracked. Irreversible changes → written
-plan with explicit rollback. Ceremony scales to actual risk.
-
----
-
-## What this package includes
-
-### Workflow foundation
-
-| Skill | Purpose |
+| File | Purpose |
 |---|---|
-| `harness-init` | Scaffolds the canonical `harness/` structure into any existing repo. Run by the **user**, not the agent. |
-| `task-router` | Triages tasks and chooses the right working mode: Direct, Tracked, or High-risk planned. |
+| `AGENTS.md` | Agent instructions: startup workflow, rules, behavioral guidelines, definition of done |
+| `feature_index.json` | Minimal feature index: id, title, status, priority, depends_on |
+| `features/feat-001.md` | Feature detail file: objective, done criteria, plan, evidence |
+| `init.sh` | Health check — `quick` mode (<5s) for startup, `full` mode before marking done |
+| `progress.md` | Append-only session log — prepend per session, never edit old blocks |
+| `check-state.sh` | Show active/blocked/todo features and progress count |
 
-### Working discipline
+### Design principles
 
-| Skill | Purpose |
-|---|---|
-| `brainstorming` | Structured exploration when direction is unclear or tradeoffs matter. |
-| `writing-plans` | Writes a self-contained, executable plan with per-step verifiable done conditions. |
-| `executing-plans` | Executes an existing plan step by step with verification checkpoints. |
-| `verification-before-completion` | Provides fresh evidence when optional verification is chosen. |
-| `handoff` | Records mid-session state so the next session resumes without re-discovery. |
-| `prototype` | Builds a throwaway spike when logic or UX is too uncertain to commit to production code. |
+**One feature at a time.** The biggest agent failure mode: trying to implement everything at once, running out of context midway, leaving a half-implemented mess. `feature_index.json` keeps exactly one feature `active`.
 
----
+**Two verification modes.** `./init.sh` (quick, type-check only) for startup and mid-session checks. `./init.sh full` (lint + type in parallel, then test) only before marking a feature done. Fast feedback without blocking flow.
 
-## The harness structure
+**Append-only progress log.** `progress.md` is prepend-only — each session adds a new block at the top, never editing old ones. Eliminates merge conflicts when teammates work on different features in parallel.
 
-`harness-init` scaffolds this layout into a repo:
+**Feature detail on demand.** `feature_index.json` is always loaded (minimal: id, title, status). `features/<id>.md` is loaded only for the active feature (objective, done criteria, plan, evidence). No token waste on irrelevant features.
 
-```
-AGENTS.md               ← agent orientation map: sources of truth, workflow rules
-harness/
-  manifest.json         ← feature registry and lifecycle status
-  checks.json           ← feature checklist (passes: false until verified)
-  progress.md           ← running session log
-  schemas/              ← JSON schemas for validation
-  scripts/
-    validate.mjs        ← validates harness contracts
-    run-checks.mjs      ← runs registered checks
-docs/
-  specs/                ← per-feature acceptance specs
-  plans/                ← written plans (High-risk mode)
-  references/           ← repo-local knowledge docs
-```
+**Conditional startup workflow.** `AGENTS.md` distinguishes: skip the workflow for questions and lookups; run it only for actual code work. `git log` and `init.sh` are part of the code-work startup, not every conversation.
 
-The key files:
-
-- **`checks.json`** — the allowlisted quality-check registry. Each check has a
-  `passes` field that starts `false`. Agents set it `true` after verified,
-  end-to-end confirmation when recording that optional result. Never delete or
-  edit a check to make it pass; a check result does not decide whether the
-  feature owner may close the feature.
-
-- **`progress.md`** — the session handoff log. Updated at the end of every
-  session with what was done, what is in progress, and what comes next.
-
-- **`AGENTS.md`** — the agent map. Tells agents where every source of truth
-  lives and what they are and are not allowed to do.
+**Behavioral guidelines baked in.** `AGENTS.md` includes four guidelines that reduce common LLM coding mistakes: think before coding, simplicity first, surgical changes, goal-driven execution.
 
 ---
 
-## Installation
+## Five subsystems
 
-### Via `npx skills`
+Every useful coding-agent harness has five subsystems:
+
+| Subsystem | Artifact | Purpose |
+|---|---|---|
+| Instructions | `AGENTS.md` | Startup path, rules, definition of done |
+| State | `feature_index.json` + `features/<id>.md` | Status index (always loaded) + detail (on demand) |
+| Verification | `init.sh` | Quick and full checks the agent runs before claiming done |
+| Scope | Done criteria + `depends_on` | Prevents overreach and half-finished work |
+| Lifecycle | Append-only `progress.md` + end-of-session routine | Makes the next session restartable |
+
+---
+
+## Install
+
+### Via `npx skills` (harness-slim only)
 
 ```bash
-# Install all skills
-npx skills add tungxuan1656/harness-creator
-
-# Install specific skills only
-npx skills add tungxuan1656/harness-creator --skill task-router --skill harness-init
-
-# Skip prompts
-npx skills add tungxuan1656/harness-creator --all
+npx skills add tungxuan1656/harness-slim --skill harness-slim
 ```
 
-Skills install to `.agents/skills/` in the current project by default.
-When prompted, select **Universal (.agents/skills)**.
+### Clone for all bundled skills
 
-### Manual
+To get `harness-slim` plus the 10 companion skills in one go, clone the repo and copy the `skills/` folder:
 
-```sh
+```bash
+git clone https://github.com/tungxuan1656/harness-slim /tmp/harness-slim
 mkdir -p .agents/skills
-cp -R path/to/harness-creator/skills/task-router .agents/skills/
-cp -R path/to/harness-creator/skills/harness-init .agents/skills/
+cp -R /tmp/harness-slim/skills/* .agents/skills/
 ```
 
 ---
 
-## Setting up a repo
+## Use
 
-Once `harness-init` is installed, run the scaffolding script directly:
+```bash
+# Create a harness in a project
+node skills/harness-slim/scripts/create-harness.mjs --target /path/to/project
 
-```sh
-node .agents/skills/harness-init/scripts/create-harness.mjs /path/to/repo \
-  --repo-name my-repo \
-  --purpose "What this repo does" \
-  --verification-command "npm test" \
-  --dry-run
+# Check current harness state
+bash skills/harness-slim/scripts/check-state.sh /path/to/project/feature_index.json
+
+# Validate harness structure (five-subsystem score)
+node skills/harness-slim/scripts/validate-harness.mjs --target /path/to/project
+
+# HTML assessment report
+node skills/harness-slim/scripts/run-benchmark.mjs --target /path/to/project --html report.html
 ```
 
-Remove `--dry-run` to write files. The script is missing-only — it never
-overwrites existing files. Review the dry-run output, then run for real.
+Options for `create-harness.mjs`:
 
-After scaffolding:
-
-1. Open `harness/checks.json` and write the optional quality checklist for your
-   project. Each check starts `passes: false`. Add as many as you need — this
-   supports the agent's todo list without becoming a close gate.
-2. Open `AGENTS.md` and confirm the verification command is correct.
-3. Commit the initial harness files.
-
-From here, the agent can orient itself, pick the next unchecked feature, and
-work.
+| Flag | Description |
+|---|---|
+| `--target DIR` | Target project directory (default: current dir) |
+| `--package-manager npm\|pnpm\|yarn\|bun` | Override auto-detected package manager |
+| `--commands "cmd1,cmd2"` | Custom verification commands |
+| `--force` | Overwrite existing harness files |
 
 ---
 
 ## Typical session flow
 
-With the harness in place, a working session looks like:
-
 ```
-User: implement the next unchecked feature
-Agent: [reads checks.json, picks the first passes: false entry]
-Agent: [optionally runs verification command — establishes a useful baseline]
+User:  implement the next feature
+Agent: [reads feature_index.json, finds active feat]
+Agent: [reads features/<id>.md — objective and done criteria]
+Agent: [runs ./init.sh — confirms environment is healthy]
 Agent: [implements the feature]
-Agent: [optionally runs verification — records fresh confidence evidence]
-Agent: [sets passes: true in checks.json when recording a passed check]
-Agent: [updates progress.md, commits]
+Agent: [runs ./init.sh full — lint + type + test]
+Agent: [marks done in feature_index.json, records evidence in features/<id>.md]
+Agent: [prepends block to progress.md, commits]
 ```
 
-The agent does not move to the next feature in the same session unless
-explicitly instructed. The feature owner may close a feature without a check
-result or explanation. Clean commit, clean state.
+The agent works one feature at a time and does not move to the next unless instructed.
 
 ---
 
 ## Requirements
 
-Node.js 20+ is required only for the `harness-init` scripts. All other skills
-are plain markdown instructions for the agent and have no runtime dependencies.
+Node.js 20+ is required for the scripts (`create-harness.mjs`, `validate-harness.mjs`). `check-state.sh` and `init.sh` require only bash, grep, and sed — no external dependencies.
+
+---
+
+## Optional companion skills
+
+`harness-slim` is intentionally slim — it works standalone and has no dependencies on the skills below. The companions are optional: pick what fits your workflow.
+
+All skills live in `skills/`. To use any of them, copy the relevant folder into your project's `.agents/skills/` (or wherever your agent tool expects them).
+
+| Skill | What it does | Source |
+|---|---|---|
+| [`brainstorming`](skills/brainstorming/) | Explore requirements and design before touching code — produces a spec, then hands off to `writing-plans` | [obra/superpowers](https://github.com/obra/superpowers) |
+| [`codebase-design`](skills/codebase-design/) | Shared vocabulary for designing deep modules: module, interface, depth, seam, adapter, leverage, locality | [mattpocock/skills](https://github.com/mattpocock/skills) |
+| [`writing-plans`](skills/writing-plans/) | Turn a spec into a bite-sized implementation plan with TDD steps, file map, and done criteria | [obra/superpowers](https://github.com/obra/superpowers) |
+| [`subagent-driven-development`](skills/subagent-driven-development/) | Execute a plan by dispatching one fresh subagent per task, with per-task review and a final whole-branch review | [obra/superpowers](https://github.com/obra/superpowers) |
+| [`executing-plans`](skills/executing-plans/) | Inline plan execution with review checkpoints — fallback when subagents are not available | [obra/superpowers](https://github.com/obra/superpowers) |
+| [`systematic-debugging`](skills/systematic-debugging/) | Four-phase debugging: root cause first, pattern analysis, hypothesis testing, then fix — never guess | [obra/superpowers](https://github.com/obra/superpowers) |
+| [`verification-before-completion`](skills/verification-before-completion/) | Evidence before claims — run the verification command, read the output, only then declare done | [obra/superpowers](https://github.com/obra/superpowers) |
+| [`git-commit`](skills/git-commit/) | Conventional commit messages auto-generated from diff — type, scope, description, safety rules | [github/awesome-copilot](https://github.com/github/awesome-copilot) |
+| [`handoff`](skills/handoff/) | Compact the current session into a handoff document so a fresh agent can resume without losing context | [mattpocock/skills](https://github.com/mattpocock/skills) |
+| [`find-skills`](skills/find-skills/) | Search and install skills from the open agent skills ecosystem at [skills.sh](https://skills.sh) | [vercel-labs/skills](https://github.com/vercel-labs/skills) |
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

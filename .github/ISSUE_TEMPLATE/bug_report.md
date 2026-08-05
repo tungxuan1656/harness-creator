@@ -12,7 +12,7 @@ assignees: ""
 
 ## Affected skill or path
 
-<!-- For example: skills/harness-init/... or skills/task-router/SKILL.md -->
+<!-- For example: skills/harness-slim/SKILL.md or skills/harness-slim/scripts/create-harness.mjs -->
 
 ## Steps to reproduce
 

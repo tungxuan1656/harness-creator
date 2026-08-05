@@ -1,36 +1,64 @@
 ---
 name: executing-plans
-description: Execute an existing written plan step by step, with optional verification checkpoints.
-metadata:
-  version: "1.0.0"
-  license: MIT
+description: Use when you have a written implementation plan to execute in a separate session with review checkpoints
 ---
 
 # Executing Plans
 
-Load the plan, review it critically, execute step by step, and use its optional verification support
-without treating verification as a close gate.
+## Overview
 
-## Process
+Load plan, review critically, execute all tasks, report when complete.
 
-1. **Read the plan completely.** Raise any concerns before starting — do not guess through ambiguity.
-2. **Execute each step in order.** Mark steps done as you go.
-3. **Run planned verification after each step that changes observable behavior when useful.**
-4. **Stop and ask** when blocked — a missing dependency, an unclear instruction, or a failure that
-   materially prevents the requested change. Report failed optional checks without turning them into
-   a close gate.
+**Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-## When to stop and escalate
+**Note:** Tell your human partner that Superpowers works much better with access to subagents (Claude Code, Codex CLI, Codex App, Copilot CLI, and Gemini CLI all qualify; see the per-platform tool refs in `../using-superpowers/references/`). If subagents are available, use superpowers:subagent-driven-development instead of this skill.
 
-Go back to `brainstorming` or `writing-plans` when execution reveals:
-- Invalid assumptions in the plan
-- Missing acceptance criteria
-- Unexpected constraints that change the approach
+## The Process
 
-## Completion
+### Step 1: Load and Review Plan
+1. Ensure an isolated workspace: use superpowers:using-git-worktrees to create one or verify the existing one
+2. Read plan file
+3. Review critically - identify any questions or concerns about the plan
+4. If concerns: Raise them with your human partner before starting
+5. If no concerns: Create todos for the plan items and proceed
 
-If the plan specifies a final verification, run it before reporting that verification result. Use
-`verification-before-completion` when useful and record evidence when available. The feature owner may
-close the work without running the planned verification or recording a reason.
+### Step 2: Execute Tasks
 
-If stopping mid-plan, write a handoff using `handoff`.
+For each task:
+1. Mark as in_progress
+2. Follow each step exactly (plan has bite-sized steps)
+3. Run verifications as specified
+4. Mark as completed
+
+### Step 3: Complete Development
+
+After all tasks complete and verified:
+- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
+- **REQUIRED SUB-SKILL:** Use superpowers:finishing-a-development-branch
+- Follow that skill to verify tests, present options, execute choice
+
+## When to Stop and Ask for Help
+
+**STOP executing immediately when:**
+- Hit a blocker (missing dependency, test fails, instruction unclear)
+- Plan has critical gaps preventing starting
+- You don't understand an instruction
+- Verification fails repeatedly
+
+**Ask for clarification rather than guessing.**
+
+## When to Revisit Earlier Steps
+
+**Return to Review (Step 1) when:**
+- Partner updates the plan based on your feedback
+- Fundamental approach needs rethinking
+
+**Don't force through blockers** - stop and ask.
+
+## Remember
+- Review plan critically first
+- Follow plan steps exactly
+- Don't skip verifications
+- Reference skills when plan says to
+- Stop when blocked, don't guess
+- Never start implementation on main/master branch without explicit user consent
