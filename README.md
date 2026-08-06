@@ -18,6 +18,7 @@ The engineers at Anthropic and OpenAI documented these failure modes directly:
 
 - **Anthropic** — [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents): agents need an initializer to set up a feature checklist and a progress log, then work one feature at a time, always leaving a clean commit.
 - **Anthropic** — [Harness design for long-running application development](https://www.anthropic.com/engineering/harness-design-long-running-apps): separating planner, generator, and evaluator roles; using structured artifacts to hand off context across sessions.
+- **OpenAI** — [Harness Engineering](https://openai.com/vi-VN/index/harness-engineering/): foundational insights on environment design, continuous feedback loops, and structure for autonomous AI agents.
 - **OpenAI** — [Using PLANS.md for multi-hour problem solving](https://developers.openai.com/cookbook/articles/codex_exec_plans): a written plan with verifiable per-step done conditions turns vague intent into executable, trackable work.
 
 This skill applies those lessons — stripped to the minimum that works across any repo, without forcing heavy ceremony on simple work.
