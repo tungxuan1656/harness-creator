@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 export const SKILL_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const TEMPLATE_DIR = path.join(SKILL_ROOT, 'templates');
 export const SUBSYSTEMS = ['instructions', 'state', 'verification', 'scope', 'lifecycle'];
+export const FEATURE_STATUSES = ['todo', 'active', 'blocked', 'done'];
+export const FEATURE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export function parseArgs(argv) {
   const args = { _: [] };
@@ -45,6 +47,149 @@ export async function readText(filePath) {
 export async function readJson(filePath) {
   return JSON.parse(await readText(filePath));
 }
+
+/**
+ * Validate the small, intentionally boring feature index schema and its state
+ * invariants.  Scoring is deliberately kept separate from this function: a
+ * structurally attractive harness must not be able to score around invalid
+ * state.
+ */
+export function validateFeatureIndex(index, { detailDir } = {}) {
+  const errors = [];
+  const features = index && typeof index === 'object' && !Array.isArray(index)
+    ? index.features
+    : undefined;
+
+  if (!index || typeof index !== 'object' || Array.isArray(index)) {
+    errors.push('feature index must be a JSON object');
+    return { valid: false, errors, features: [], active: [], blocked: [], todo: [], done: [] };
+  }
+  if (!Array.isArray(features) || features.length === 0) {
+    errors.push('feature index.features must be a non-empty array');
+    return { valid: false, errors, features: [], active: [], blocked: [], todo: [], done: [] };
+  }
+
+  const ids = new Set();
+  for (const [position, feature] of features.entries()) {
+    const label = `features[${position}]`;
+    if (!feature || typeof feature !== 'object' || Array.isArray(feature)) {
+      errors.push(`${label} must be an object`);
+      continue;
+    }
+    if (typeof feature.id !== 'string' || feature.id.trim() === '') {
+      errors.push(`${label}.id must be a non-empty string`);
+    } else if (!FEATURE_ID_PATTERN.test(feature.id)) {
+      errors.push(`${label}.id must contain only lowercase letters, numbers, and single hyphens (for example, feat-001)`);
+    } else if (ids.has(feature.id)) {
+      errors.push(`duplicate feature id: ${feature.id}`);
+    } else {
+      ids.add(feature.id);
+    }
+    if (typeof feature.title !== 'string' || feature.title.trim() === '') {
+      errors.push(`${label}.title must be a non-empty string`);
+    }
+    if (!FEATURE_STATUSES.includes(feature.status)) {
+      errors.push(`${label}.status must be one of: ${FEATURE_STATUSES.join(', ')}`);
+    }
+    if (!Number.isInteger(feature.priority)) {
+      errors.push(`${label}.priority must be an integer`);
+    }
+    if (!Array.isArray(feature.depends_on)) {
+      errors.push(`${label}.depends_on must be an array`);
+    } else {
+      const dependencies = new Set();
+      for (const dependency of feature.depends_on) {
+        if (typeof dependency !== 'string' || dependency.trim() === '') {
+          errors.push(`${label}.depends_on must contain non-empty feature ids`);
+        } else if (!FEATURE_ID_PATTERN.test(dependency)) {
+          errors.push(`${label}.depends_on contains unsafe feature id: ${dependency}`);
+        } else if (dependency === feature.id) {
+          errors.push(`${label}.depends_on cannot contain its own id`);
+        } else if (dependencies.has(dependency)) {
+          errors.push(`${label}.depends_on contains duplicate id: ${dependency}`);
+        } else {
+          dependencies.add(dependency);
+        }
+      }
+    }
+  }
+
+  for (const feature of features) {
+    if (!feature || typeof feature !== 'object' || !Array.isArray(feature.depends_on)) continue;
+    for (const dependency of feature.depends_on) {
+      if (typeof dependency === 'string' && !ids.has(dependency)) {
+        errors.push(`${feature.id || 'feature'} depends on missing feature: ${dependency}`);
+      }
+    }
+  }
+
+  const active = features.filter((feature) => feature?.status === 'active');
+  const blocked = features.filter((feature) => feature?.status === 'blocked');
+  const todo = features.filter((feature) => feature?.status === 'todo');
+  const done = features.filter((feature) => feature?.status === 'done');
+  if (active.length > 1) errors.push('feature index must have at most one active feature');
+  if (active.length === 0 && (todo.length > 0 || blocked.length > 0)) {
+    errors.push('feature index must have exactly one active feature while todo or blocked work remains');
+  }
+
+  const featuresById = new Map(features.map((feature) => [feature?.id, feature]));
+  for (const feature of active) {
+    const unmet = (feature.depends_on || [])
+      .filter((dependency) => featuresById.get(dependency)?.status !== 'done');
+    if (unmet.length) {
+      errors.push(`${feature.id} cannot be active until dependencies are done: ${unmet.join(', ')}`);
+    }
+  }
+
+  if (detailDir && active.length === 1) {
+    const detailRoot = path.resolve(detailDir);
+    const detailPath = path.resolve(detailRoot, `${active[0].id}.md`);
+    const relativeDetailPath = path.relative(detailRoot, detailPath);
+    if (relativeDetailPath.startsWith(`..${path.sep}`) || path.isAbsolute(relativeDetailPath)) {
+      errors.push(`active feature detail path must stay beneath features: ${detailPath}`);
+    } else if (!existsSync(detailPath)) {
+      errors.push(`active feature detail missing: ${detailPath}`);
+    }
+  }
+
+  return { valid: errors.length === 0, errors, features, active, blocked, todo, done };
+}
+
+export async function validateFeatureIndexFile(indexPath, options = {}) {
+  if (path.basename(indexPath) !== 'feature_index.json') {
+    return {
+      valid: false,
+      errors: [`unsupported feature index filename: ${path.basename(indexPath)}; use feature_index.json`],
+      features: [],
+      active: [],
+      blocked: [],
+      todo: [],
+      done: []
+    };
+  }
+  let index;
+  try {
+    index = await readJson(indexPath);
+  } catch (error) {
+    return {
+      valid: false,
+      errors: [`malformed feature index JSON: ${error.message}`],
+      features: [],
+      active: [],
+      blocked: [],
+      todo: [],
+      done: []
+    };
+  }
+  return validateFeatureIndex(index, {
+    ...options,
+    detailDir: options.detailDir ?? path.join(path.dirname(indexPath), 'features')
+  });
+}
+
+// Explicit aliases make the parser usable by small CLI integrations without
+// forcing them to know whether they need the object or file form.
+export const parseFeatureIndex = validateFeatureIndexFile;
 
 export async function writeText(filePath, contents) {
   await mkdir(path.dirname(filePath), { recursive: true });
@@ -202,7 +347,7 @@ ${body}
 echo "=== Verification Complete ==="
 echo ""
 echo "Next steps:"
-echo "1. Read feature_list.json to see current feature state"
+echo "1. Read feature_index.json to see current feature state"
 echo "2. Pick ONE unfinished feature to work on"
 echo "3. Implement only that feature"
 echo "4. Re-run verification before claiming done"
@@ -221,7 +366,7 @@ export function scoreHarness(files) {
   const byPath = new Map(files.map((file) => [file.path, file.content]));
   const allText = files.map((file) => `${file.path}\n${file.content}`).join('\n\n');
   const agents = byPath.get('AGENTS.md') || byPath.get('CLAUDE.md') || '';
-  const featureList = byPath.get('feature_index.json') || byPath.get('feature_list.json') || byPath.get('feature-list.json') || '';
+  const featureList = byPath.get('feature_index.json') || '';
   const progress = byPath.get('progress.md') || '';
   const init = byPath.get('init.sh') || '';
   const handoff = '';
@@ -235,7 +380,7 @@ export function scoreHarness(files) {
       structuredHas(agents, ['feature_index.json', 'features/', 'progress.md'], 'State artifacts routed from instructions')
     ],
     state: [
-      hasFile(byPath, ['feature_index.json', 'feature_list.json', 'feature-list.json'], 'Feature index exists'),
+      hasFile(byPath, ['feature_index.json'], 'Feature index exists'),
       jsonFeatureList(featureList, 'Feature index is valid and has required fields'),
       hasFile(byPath, ['progress.md'], 'Progress log exists'),
       structuredHas(progress, ['Status', 'Done', 'Next'], 'Progress log supports restart'),
@@ -321,12 +466,8 @@ function structuredHas(markdown, needles, message) {
 function jsonFeatureList(text, message) {
   try {
     const parsed = JSON.parse(text);
-    const valid = Array.isArray(parsed.features) && parsed.features.every((feature) =>
-      typeof feature.id === 'string'
-      && (typeof feature.title === 'string' || typeof feature.name === 'string')
-      && typeof feature.status === 'string'
-    );
-    return { pass: valid, message };
+    const result = validateFeatureIndex(parsed);
+    return { pass: result.valid, message };
   } catch {
     return { pass: false, message };
   }
@@ -337,8 +478,6 @@ export async function loadHarnessFiles(root) {
     'AGENTS.md',
     'CLAUDE.md',
     'feature_index.json',
-    'feature_list.json',
-    'feature-list.json',
     'progress.md',
     'init.sh'
   ];
@@ -362,6 +501,41 @@ export async function loadHarnessFiles(root) {
   return files;
 }
 
+export async function validateHarnessTarget(root) {
+  const hardFailures = [];
+  const indexPath = path.join(root, 'feature_index.json');
+  const legacyNames = ['feature_list.json', 'feature-list.json'];
+  const instructionExists = await exists(path.join(root, 'AGENTS.md')) || await exists(path.join(root, 'CLAUDE.md'));
+
+  if (!instructionExists) hardFailures.push('AGENTS.md or CLAUDE.md is missing');
+  if (!await exists(indexPath)) {
+    const legacy = legacyNames.find((name) => existsSync(path.join(root, name)));
+    hardFailures.push(legacy
+      ? `${legacy} is unsupported; use feature_index.json`
+      : 'feature_index.json is missing');
+  }
+  if (!await exists(path.join(root, 'progress.md'))) hardFailures.push('progress.md is missing');
+  if (!await exists(path.join(root, 'init.sh'))) hardFailures.push('init.sh is missing');
+
+  const state = await exists(indexPath)
+    ? await validateFeatureIndexFile(indexPath)
+    : { valid: false, errors: ['feature_index.json is missing'], active: [], blocked: [], todo: [], done: [] };
+  for (const error of state.errors) hardFailures.push(error);
+
+  return {
+    valid: hardFailures.length === 0,
+    hardFailures,
+    index: await exists(indexPath) ? 'feature_index.json' : undefined,
+    errors: state.errors,
+    counts: {
+      active: state.active?.length ?? 0,
+      blocked: state.blocked?.length ?? 0,
+      todo: state.todo?.length ?? 0,
+      done: state.done?.length ?? 0
+    }
+  };
+}
+
 export function formatScoreReport(result, root = '.') {
   const lines = [
     `Harness validation for ${root}`,
@@ -381,6 +555,13 @@ export function formatScoreReport(result, root = '.') {
 }
 
 export function htmlReport(result, title = 'Harness Assessment') {
+  const gateFailures = result.validation?.hardFailures ?? [];
+  const gateStatus = result.validation ? (gateFailures.length ? 'INVALID' : 'VALID') : 'NOT RUN';
+  const gateClass = gateFailures.length ? 'fail' : 'pass';
+  const gateHtml = result.validation
+    ? `<div class="metric ${gateClass}">State/file gates<strong>${gateStatus}</strong></div>
+       <div class="gate-summary ${gateClass}"><strong>${gateStatus}</strong> state/file gates${gateFailures.length ? `: ${gateFailures.map(escapeHtml).join('; ')}` : ' passed.'}</div>`
+    : '';
   const rows = Object.entries(result.subsystems).map(([name, subsystem]) => {
     const checks = subsystem.checks.map((check) =>
       `<li class="${check.pass ? 'pass' : 'fail'}">${check.pass ? 'PASS' : 'FAIL'} ${escapeHtml(check.message)}</li>`
@@ -411,6 +592,7 @@ export function htmlReport(result, title = 'Harness Assessment') {
     li { margin: 6px 0; }
     .pass { color: #126c43; }
     .fail { color: #a23020; }
+    .gate-summary { margin-top: 12px; }
   </style>
 </head>
 <body>
@@ -419,9 +601,11 @@ export function htmlReport(result, title = 'Harness Assessment') {
       <h1>${escapeHtml(title)}</h1>
       <p>Five-subsystem harness validation report.</p>
       <div class="summary">
-        <div class="metric">Overall<strong>${result.overall}/100</strong></div>
+        <div class="metric">Overall score<strong>${result.overall}/100</strong></div>
         <div class="metric">Bottleneck<strong>${escapeHtml(result.bottleneck ?? 'none')}</strong></div>
+        ${gateHtml}
       </div>
+      ${result.validation && gateFailures.length ? '<p class="fail"><strong>INVALID:</strong> hard state/file gates failed. The score above is informational only.</p>' : ''}
     </header>
     ${rows}
   </main>

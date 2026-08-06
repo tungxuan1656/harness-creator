@@ -28,7 +28,8 @@ node skills/harness-slim/scripts/validate-harness.mjs --target /path/to/project
 node skills/harness-slim/scripts/run-benchmark.mjs --target /path/to/project --html /path/to/report.html
 ```
 
-Scripts use only Node.js built-ins (plus `check-state.sh` which uses grep/sed only).
+Scripts use Node.js built-ins; `check-state.sh` uses Node.js for semantic JSON
+validation and Bash for its entrypoint.
 
 ## What It Creates
 
@@ -39,14 +40,25 @@ Scripts use only Node.js built-ins (plus `check-state.sh` which uses grep/sed on
 | `features/feat-001.md` | Feature detail placeholder: objective, done criteria, plan, evidence |
 | `init.sh` | Health check script with `quick` (default) and `full` modes |
 | `progress.md` | Append-only session log |
-| `check-state.sh` | Show active/blocked/todo features and progress count |
+| `check-state.sh` | Validate semantic state, then show active/blocked/todo features and progress count |
+
+Fresh output has `feat-001` active and `feat-002` todo. Each entry in
+`feature_index.json` uses `id`, `title`, `status`, `priority`, and `depends_on`.
+`check-state.sh` validates that schema and its state invariants (including
+dependencies, at most one active feature, required active detail, and a valid
+work state) before printing state. It exits nonzero on malformed or invalid
+state.
 
 ## init.sh modes
 
 ```bash
-./init.sh        # quick: type-check only, <5s — use at startup
-./init.sh full   # full: lint + type (parallel) + test — use before marking done
+./init.sh        # quick: available fast/static check — use at startup
+./init.sh full   # full: configured lint + static/type + test checks
 ```
+
+`quick` keeps full-mode checks not applicable. In either mode, a configured
+command that fails fails `init.sh`; a command that is absent is reported as a
+warning or not applicable and does not fail the script.
 
 ## What validate-harness Checks
 
@@ -58,7 +70,10 @@ Five subsystems scored 1–5:
 4. **Scope** — one-feature rule, done criteria, depends_on tracked
 5. **Lifecycle** — end-of-session procedure, append-only progress log
 
-Score is structural. Does not replace real before/after agent-session testing.
+The score is heuristic: it summarizes structural signals and is not a quality
+measurement. The validator also enforces hard state/file gates, so invalid
+semantic state or missing required files fails validation regardless of score.
+It does not replace real before/after agent-session testing.
 
 ## Status
 
@@ -77,6 +92,7 @@ Score is structural. Does not replace real before/after agent-session testing.
 harness-slim/
 ├── SKILL.md
 ├── metadata.json
+├── PROVENANCE.md
 ├── agents/openai.yaml
 ├── scripts/
 │   ├── create-harness.mjs
@@ -87,6 +103,7 @@ harness-slim/
 │   └── lib/harness-utils.mjs
 ├── templates/
 │   ├── agents.md
+│   ├── detailed-plan.md
 │   ├── feature_index.json
 │   ├── features/
 │   │   └── feat-001.md
@@ -96,9 +113,13 @@ harness-slim/
 │   ├── context-engineering-pattern.md
 │   ├── gotchas.md
 │   ├── memory-persistence-pattern.md
-│   └── multi-agent-pattern.md
+│   ├── multi-agent-pattern.md
+│   └── repository-knowledge-architecture.md
 └── evals/evals.json
 ```
+
+`templates/detailed-plan.md` is an opt-in linked-plan template for complex or
+high-risk work; the generator does not create it by default.
 
 ## Boundaries
 

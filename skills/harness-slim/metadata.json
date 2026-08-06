@@ -1,13 +1,12 @@
 {
   "name": "harness-slim",
-  "version": "1.0.0",
-  "description": "Harness engineering for AI coding agents — five subsystems, memory persistence, session continuity, verification workflows, scope control, lifecycle management.",
+  "description": "Harness engineering for AI coding agents — five subsystems, feature_index.json state (id, title, status, priority, depends_on), memory persistence, session continuity, verification workflows, scope control, lifecycle management.",
   "license": "MIT",
-  "author": "Learn Harness Engineering",
-  "repository": "https://github.com/walkinglabs/learn-harness-engineering",
+  "author": "tungxuan1656",
+  "publisher": "tungxuan1656",
+  "repository": "https://github.com/tungxuan1656/harness-slim",
   "languages": ["en", "zh"],
   "compatibility": {
-    "minCliVersion": "0.1.0",
     "agents": [
       "claude-code",
       "codex-cli",
@@ -20,10 +19,8 @@
   "references": [
     "references/memory-persistence-pattern.md",
     "references/context-engineering-pattern.md",
-    "references/skill-runtime-pattern.md",
-    "references/tool-registry-pattern.md",
     "references/multi-agent-pattern.md",
-    "references/lifecycle-bootstrap-pattern.md",
+    "references/repository-knowledge-architecture.md",
     "references/gotchas.md"
   ],
   "triggers": [
@@ -49,16 +46,17 @@
       "scripts/validate-harness.mjs",
       "scripts/render-assessment-html.mjs",
       "scripts/run-benchmark.mjs",
+      "scripts/check-state.sh",
       "scripts/lib/harness-utils.mjs"
     ],
     "assets": [],
     "templates": [
       "templates/agents.md",
-      "templates/feature-list.json",
-      "templates/feature-list.schema.json",
+      "templates/detailed-plan.md",
+      "templates/feature_index.json",
+      "templates/features/feat-001.md",
       "templates/init.sh",
-      "templates/progress.md",
-      "templates/session-handoff.md"
+      "templates/progress.md"
     ]
   }
 }

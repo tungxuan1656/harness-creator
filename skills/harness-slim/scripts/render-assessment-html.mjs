@@ -5,6 +5,7 @@ import {
   loadHarnessFiles,
   parseArgs,
   scoreHarness,
+  validateHarnessTarget,
   writeText
 } from './lib/harness-utils.mjs';
 
@@ -20,7 +21,11 @@ Renders the five-subsystem harness assessment as a standalone HTML file.`);
 const target = path.resolve(args.target || args._[0] || process.cwd());
 const output = path.resolve(args.output || path.join(target, 'harness-assessment.html'));
 const result = scoreHarness(await loadHarnessFiles(target));
+result.validation = await validateHarnessTarget(target);
 
 await writeText(output, htmlReport(result, `Harness Assessment: ${path.basename(target)}`));
 console.log(`HTML report written to ${output}`);
 console.log(`Overall: ${result.overall}/100`);
+console.log(`State/file gates: ${result.validation.hardFailures.length ? 'INVALID' : 'PASS'}`);
+for (const failure of result.validation.hardFailures) console.log(`  FAIL ${failure}`);
+if (result.validation.hardFailures.length) process.exitCode = 1;

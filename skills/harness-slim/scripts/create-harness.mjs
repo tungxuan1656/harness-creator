@@ -33,8 +33,11 @@ const force = Boolean(args.force);
 const project = await detectProject(target);
 project.packageManager = detectPackageManager(target, args.packageManager);
 const commands = args.commands
-  ? String(args.commands).split(',').map((command) => command.trim()).filter(Boolean)
+  ? splitCommands(String(args.commands))
   : verificationCommands(project, args.packageManager);
+const configuredCommands = args.commands
+  ? commands
+  : [];
 
 await mkdir(target, { recursive: true });
 
@@ -42,7 +45,8 @@ const replacements = {
   PROJECT_PURPOSE: project.stack === 'generic'
     ? 'Project harness for reliable agent-assisted development.'
     : `Project harness for reliable agent-assisted development in a ${project.stack} codebase.`,
-  VERIFICATION_COMMANDS: commands.map((command) => `- \`${command}\``).join('\n')
+  VERIFICATION_COMMANDS: commands.map((command) => `- \`${command}\``).join('\n'),
+  CONFIGURED_COMMANDS: configuredCommands.map((command) => `  ${shellQuote(command)}`).join('\n')
 };
 
 const results = [];
@@ -57,15 +61,10 @@ const featuresDir = path.join(target, 'features');
 await mkdir(featuresDir, { recursive: true });
 results.push(await copyTemplate('features/feat-001.md', path.join(featuresDir, 'feat-001.md'), {}, { force }));
 
-// init.sh (template already has full 2-mode content — copy as-is)
+// init.sh (custom commands are transported as shell-quoted array entries)
 const initPath = path.join(target, 'init.sh');
 if (force || !await exists(initPath)) {
-  const templatePath = new URL('../templates/init.sh', import.meta.url).pathname;
-  const { readFile } = await import('node:fs/promises');
-  const content = await readFile(templatePath, 'utf8');
-  await writeText(initPath, content);
-  await chmod(initPath, 0o755);
-  results.push({ path: initPath, status: 'written' });
+  results.push(await copyTemplate('init.sh', initPath, replacements, { force: true }));
 } else {
   results.push({ path: initPath, status: 'skipped', reason: 'exists' });
 }
@@ -88,4 +87,37 @@ console.log(`Detected stack: ${project.stack}`);
 console.log('');
 for (const result of results) {
   console.log(`${result.status.toUpperCase()} ${path.relative(target, result.path)}${result.reason ? ` (${result.reason})` : ''}`);
+}
+
+function shellQuote(value) {
+  return `'${value.replaceAll("'", "'\\''")}'`;
+}
+
+function splitCommands(value) {
+  const commands = [];
+  let current = '';
+  let quote = '';
+  let escaped = false;
+  for (const character of value) {
+    if (escaped) {
+      current += character;
+      escaped = false;
+    } else if (character === '\\' && quote !== "'") {
+      current += character;
+      escaped = true;
+    } else if ((character === '"' || character === "'") && !quote) {
+      quote = character;
+      current += character;
+    } else if (character === quote) {
+      quote = '';
+      current += character;
+    } else if (character === ',' && !quote) {
+      if (current.trim()) commands.push(current.trim());
+      current = '';
+    } else {
+      current += character;
+    }
+  }
+  if (current.trim()) commands.push(current.trim());
+  return commands;
 }

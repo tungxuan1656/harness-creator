@@ -56,7 +56,11 @@ Explain what was created and how to replace placeholder feature entries.
 bash skills/harness-slim/scripts/check-state.sh /path/to/project/feature_index.json
 ```
 
-Shows active/blocked/todo features and overall progress. Run before starting a new feat or after marking one done.
+Validates `feature_index.json` semantically, then shows active/blocked/todo
+features and overall progress. It checks the required `id`, `title`, `status`,
+`priority`, and `depends_on` fields, dependencies, active-feature invariant,
+and active detail file. It exits nonzero on failures. Run before starting a new
+feat or after marking one done.
 
 ### Audit an existing harness
 
@@ -64,7 +68,9 @@ Shows active/blocked/todo features and overall progress. Run before starting a n
 node skills/harness-slim/scripts/validate-harness.mjs --target /path/to/project
 ```
 
-Reports five subsystem scores, lowest-scoring area, and first 2–3 changes that would improve reliability.
+Reports a heuristic five-subsystem score, lowest-scoring area, and first 2–3
+changes that would improve reliability. Hard state/file gates are evaluated
+separately; a failed gate makes validation fail regardless of the score.
 
 ### Produce a report
 
@@ -83,6 +89,7 @@ Load only the reference needed for the problem:
 - Context budget and progressive disclosure: [Context Engineering](references/context-engineering-pattern.md)
 - Delegation and parallel agents: [Multi-Agent Coordination](references/multi-agent-pattern.md)
 - Non-obvious failure modes: [Gotchas](references/gotchas.md)
+- Optional, only when an initializer is assessing recurring repository knowledge or documentation needs: [Repository Knowledge Architecture](references/repository-knowledge-architecture.md)
 
 ## Design Rules
 
@@ -93,7 +100,10 @@ Load only the reference needed for the problem:
 - Use one active feature unless the harness has explicit multi-agent ownership boundaries.
 - Prefer append/prepend state files over relying on chat history.
 - Never hide destructive behavior in scripts; overwrites require explicit user approval.
-- `init.sh quick` for startup; `init.sh full` only before marking done.
+- `init.sh quick` runs available fast/static checks for startup; `init.sh full`
+  runs configured lint, static/type, and test checks before marking done.
+  Configured command failures fail the script. Missing commands are warnings or
+  not applicable and do not fail it.
 
 ## Deliverable Checklist
 
