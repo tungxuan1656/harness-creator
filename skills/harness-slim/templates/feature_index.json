@@ -3,7 +3,7 @@
     {
       "id": "feat-001",
       "title": "Project Setup",
-      "status": "active",
+      "status": "todo",
       "priority": 1,
       "depends_on": []
     },

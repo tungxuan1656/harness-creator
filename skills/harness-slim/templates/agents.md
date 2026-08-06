@@ -1,76 +1,51 @@
 # AGENTS.md
 
+# PROJECT
+
 {{PROJECT_PURPOSE}}
 
-Stack: [language + version]
+Detected stack: `{{PROJECT_STACK}}`
 Verify (quick): `./init.sh`
-Verify (full):  `./init.sh full`
+Verify (full): `./init.sh full`
 
 ## When to Run This Workflow
 
-**Skip for:** questions about the project, code review, one-off lookups.
+Run this workflow for implementation and bug-fix work. Skip it for questions, code review, and one-off lookups.
 
-**Run for:** implementing features, fixing bugs, any code changes.
+## Startup (code work only)
 
-## Startup Workflow (code work only)
+1. Run the quick verification and inspect recent history. Record any baseline failure. If it blocks the requested work, stop and ask; repair it only when authorized or when it is in the selected scope.
+2. Run `./scripts/check-state.sh feature_index.json`, then read `feature_index.json` and the latest relevant block in `progress.md`.
+3. If exactly one feature is `active`, read only `features/<active-id>.md` for its scope, dependencies, done criteria, and evidence. If none is active, the repository is idle; do not invent an active feature. If more than one is active, stop and resolve the state before coding.
+4. Read `docs/README.md`, then load only the project documents relevant to the current task.
 
-1. Classify the change as **feature work** or an eligible **micro-change**.
-2. Run `./init.sh` and inspect `git log --oneline -5`. If baseline fails, repair it before adding scope.
-3. For feature work, read `feature_index.json`, the active `features/<active-id>.md`, and the first 10 lines of `progress.md`.
-4. For a micro-change, check `feature_index.json` for active work and read the first 10 lines of `progress.md`; do not create a feature or detailed plan unless the change is feature work.
+## Routing and invariants
 
-Keep startup conditional: questions, reviews, and one-off lookups do not run this workflow.
+- `feature_index.json` has at most one `active` feature. Zero active features means idle.
+- An `active` feature must have its detail file, and every `depends_on` feature must be `done`. Do not activate work with unresolved dependencies.
+- Keep implementation within the selected feature's scope and done criteria. A micro-change is not permission for unrelated work.
+- The feature detail is the primary scope and evidence record. Use a linked detailed plan only when the work needs one.
+- Keep this file as a concise map. Put durable project knowledge in documents listed by `docs/README.md`; add repository-specific rules here only when every coding task must see them.
 
-## Rules
+- A small maintenance change outside an active feature requires explicit user scope. Record its files, verification, evidence, and next state in `progress.md`; when risk or intent is unclear, use a feature.
 
-- **One feature at a time**: feature work picks exactly one `active` feature from `feature_index.json`.
-- **Feature record is primary**: `features/<id>.md` is the feature's scope, short plan, done criteria, and evidence record. A detailed plan is only a linked supplement.
-- **Micro-change is a planning shortcut only**: it never authorizes unrelated code work. It is limited to a bounded, non-behavior-changing maintenance change; an explicitly scoped exception requires direct user authorization. It must not change the active feature's state, scope, dependencies, or done criteria.
-- Run `./init.sh full` before marking any feature done.
-- Commit when feat done: `feat(feat-XXX): <description>`
-- WIP commit if session ends mid-feat: `wip(feat-XXX): <state>`
-- **Stay in scope**: no changes outside current feature. Respect `depends_on` dependencies order.
-- **Dependency gate**: a non-done feature may be `active` only when every `depends_on` feature is `done`; dependent `todo` or `blocked` states remain valid.
-- If baseline `./init.sh` fails, repair before adding new scope.
+## Editing and verification
 
-### Micro-change eligibility
+- Respect the target repository's Markdown convention. Write paragraphs and lists naturally by semantic unit; do not force 80-character wrapping. Never reflow unrelated text or alter code fences, tables, URLs, commands, or links.
+- Run proportional, applicable verification and record the commands and evidence. Run `./init.sh full` before marking a feature done when it is configured or warranted by relevance and risk.
+- Mark a feature done only after its done criteria, verification, and evidence are complete. Keep unknowns explicit.
 
-Use a micro-change only for a small, well-understood, bounded maintenance change that does **not** involve:
+## Blockers and end of session
 
-- migrations;
-- public API/contract changes;
-- security/privacy/auth;
-- concurrency/data integrity;
-- multi-module work; or
-- unclear behavior. An exception is allowed only when the user explicitly authorizes the exact scope; do not infer authorization.
+If requested work is blocked, record the blocker in the relevant feature detail or `progress.md` and ask the user. Do not repair unrelated baseline failures without authorization.
 
-If it affects the active feature's state, dependencies, scope, or done criteria, it belongs to that feature and is not a micro-change. When in doubt, use feature work. Run proportional applicable verification; run `./init.sh full` when configured checks, relevance, or risk demands it. Record the authorization, exact scope/files, verification commands and evidence, and next state in a new append-only `progress.md` block. Its entry does not require a commit hash.
+1. Prepend a new block to `progress.md`; never rewrite old blocks.
+2. For feature work, update the feature status and evidence. For a micro-change, include authorization, scope/files, verification, evidence, and next state; no feature-index change is needed unless state changed.
+3. Leave the worktree according to the target repository's documented convention. Do not impose a commit policy here.
 
-## Definition of Done
+## Verification commands
 
-A feature is done only when ALL are true:
-
-- [ ] All done criteria in `features/<id>.md` checked
-- [ ] `./init.sh full` passes
-- [ ] Evidence recorded in `features/<id>.md`
-- [ ] Committed with descriptive message
-
-## Blockers
-
-Update `features/<id>.md`. Ask user.
-
-## End of Session
-
-1. For feature work, prepend a new block to `progress.md` (never edit old blocks), update status in `feature_index.json`, and commit.
-2. For a micro-change, prepend one structured block to `progress.md` (never edit old blocks) containing authorization, date, scope/files, evidence/verification, and next state. No feature-index update or commit hash is required in that entry.
-
----
-
-## Verification Commands
-
-```bash
 {{VERIFICATION_COMMANDS}}
-```
 
 ---
 
@@ -126,14 +101,3 @@ Multi-step tasks: state brief plan before starting:
 1. [Step] → verify: [check]
 2. [Step] → verify: [check]
 ```
-
-Strong criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
----
-
-## Escalation
-
-- **Architecture decisions**: check `docs/` if present, otherwise ask user.
-- **Unclear requirements**: ask before implementing.
-- **Repeated failures**: update `features/<id>.md`, flag for human review.
-- **Scope ambiguity**: re-read `features/<id>.md` done criteria.

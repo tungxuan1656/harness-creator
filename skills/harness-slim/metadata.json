@@ -1,6 +1,6 @@
 {
   "name": "harness-slim",
-  "description": "Harness engineering for AI coding agents — five subsystems, feature_index.json state (id, title, status, priority, depends_on), memory persistence, session continuity, verification workflows, scope control, lifecycle management.",
+  "description": "Harness engineering for AI coding agents — five subsystems, idle-by-default feature_index.json state (id, title, status, priority, depends_on), memory persistence, session continuity, verification workflows, scope control, lifecycle management, and optional evidence-grounded architecture guidance.",
   "license": "MIT",
   "author": "tungxuan1656",
   "publisher": "tungxuan1656",
@@ -16,6 +16,9 @@
     ]
   },
   "entryPoint": "SKILL.md",
+  "runtime": {
+    "node": ">=20"
+  },
   "references": [
     "references/memory-persistence-pattern.md",
     "references/context-engineering-pattern.md",
@@ -52,7 +55,9 @@
     "assets": [],
     "templates": [
       "templates/agents.md",
+      "templates/architecture.md",
       "templates/detailed-plan.md",
+      "templates/docs/README.md",
       "templates/feature_index.json",
       "templates/features/feat-001.md",
       "templates/init.sh",

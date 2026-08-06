@@ -1,195 +1,114 @@
 # harness-slim
 
-A single skill for making AI coding agents reliable.
-
-Gives any repository the structure agents need to start consistently, stay in scope, verify their work, and resume across sessions — without heavy ceremony.
+A compact skill for making AI coding agents reliable across long-running work.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
----
+> The best harness is small enough that the agent actually follows it.
 
-## Why this exists
-
-Agents fail not because they lack intelligence, but because they lack structure.
-
-Left alone, a coding agent will try to do too much at once, lose track of what was done between sessions, and silently move on when the codebase is already broken.
-
-The engineers at Anthropic and OpenAI documented these failure modes directly:
-
-- **Anthropic** — [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents): agents need an initializer to set up a feature checklist and a progress log, then work one feature at a time, always leaving a clean commit.
-- **Anthropic** — [Harness design for long-running application development](https://www.anthropic.com/engineering/harness-design-long-running-apps): separating planner, generator, and evaluator roles; using structured artifacts to hand off context across sessions.
-- **OpenAI** — [Harness Engineering](https://openai.com/vi-VN/index/harness-engineering/): foundational insights on environment design, continuous feedback loops, and structure for autonomous AI agents.
-- **OpenAI** — [Using PLANS.md for multi-hour problem solving](https://developers.openai.com/cookbook/articles/codex_exec_plans): a written plan with verifiable per-step done conditions turns vague intent into executable, trackable work.
-
-This skill applies those lessons — stripped to the minimum that works across any repo, without forcing heavy ceremony on simple work.
-
----
+`harness-slim` gives a repository enough structure for agents to start consistently, stay in scope, verify their work, and resume across sessions without turning project management into a framework.
 
 ## What it creates
 
-Running `create-harness.mjs` in a project produces:
+```text
+AGENTS.md
+feature_index.json
+features/feat-001.md
+init.sh
+progress.md
+docs/README.md
+scripts/check-state.sh
+```
 
-| File | Purpose |
+| Artifact | Purpose |
 |---|---|
-| `AGENTS.md` | Agent instructions: startup workflow, rules, behavioral guidelines, definition of done |
-| `feature_index.json` | Minimal feature index: id, title, status, priority, depends_on |
-| `features/feat-001.md` | Feature detail file: objective, done criteria, plan, evidence |
-| `init.sh` | Health check with `quick` startup checks and `full` verification before marking done |
-| `progress.md` | Append-only session log — prepend per session, never edit old blocks |
-| `check-state.sh` | Validate semantic state, then show active/blocked/todo features and progress count |
+| `AGENTS.md` | Concise workflow, invariants, verification, and routing to project knowledge |
+| `feature_index.json` | Small status index with at most one active feature |
+| `features/<id>.md` | Objective, scope, done criteria, plan, and evidence for one feature |
+| `init.sh` | Quick startup checks and full verification |
+| `progress.md` | Append-only handoff between sessions |
+| `docs/README.md` | Map of durable project knowledge |
+| `scripts/check-state.sh` | Bash + `jq` validation and state summary |
 
-The generated index starts with `feat-001` as the single `active` feature and
-`feat-002` as `todo`. Every feature entry has the load-bearing fields `id`,
-`title`, `status`, `priority`, and `depends_on`; dependencies name other
-feature IDs. `check-state.sh` parses this JSON and checks the schema, duplicate
-IDs, dependencies, active-feature invariant, and active detail file. It exits
-nonzero when any of those checks fail.
+A fresh harness starts idle. The agent does not activate todo work without instruction.
 
-### Design principles
+## Project documentation
 
-**One feature at a time.** The biggest agent failure mode: trying to implement everything at once, running out of context midway, leaving a half-implemented mess. `feature_index.json` keeps exactly one feature `active`.
+The generator creates only `docs/README.md`. The initializer agent inspects the repository and selects the smallest useful documentation set for its size, risk, and recurring knowledge needs.
 
-**Two verification modes.** `./init.sh` (quick) runs the available fast/static
-check for startup and reports full-mode checks as not applicable. `./init.sh
-full` runs the configured lint, type/static, and test checks before marking a
-feature done. A configured command failure fails the script; an absent command
-is reported as a warning or not applicable and does not fail it.
+```text
+docs/
+├── README.md                 # documentation map
+├── architecture.md           # boundaries, dependencies, invariants
+├── design-decisions/         # durable decisions and consequences
+├── product-specs/            # stable behavior and domain rules
+├── references/               # external APIs, protocols, domain sources
+├── generated/                # documentation derived from code or schemas
+├── security.md               # trust boundaries and controls
+└── reliability.md            # failure modes, recovery, operations
+```
 
-**Append-only progress log.** `progress.md` is prepend-only — each session adds a new block at the top, never editing old ones. Eliminates merge conflicts when teammates work on different features in parallel.
+This is a menu, not a required scaffold:
 
-**Feature detail on demand.** `feature_index.json` is always loaded (minimal: id, title, status). `features/<id>.md` is loaded only for the active feature (objective, done criteria, plan, evidence). No token waste on irrelevant features.
+- Small projects may need only `docs/README.md`.
+- Growing projects may add architecture, decisions, or domain specifications.
+- Large or regulated projects may add security, reliability, generated references, and deeper specifications.
 
-**Conditional startup workflow.** `AGENTS.md` distinguishes: skip the workflow for questions and lookups; run it only for actual code work. `git log` and `init.sh` are part of the code-work startup, not every conversation.
-
-**Behavioral guidelines baked in.** `AGENTS.md` includes four guidelines that reduce common LLM coding mistakes: think before coding, simplicity first, surgical changes, goal-driven execution.
-
----
-
-## Five subsystems
-
-Every useful coding-agent harness has five subsystems:
-
-| Subsystem | Artifact | Purpose |
-|---|---|---|
-| Instructions | `AGENTS.md` | Startup path, rules, definition of done |
-| State | `feature_index.json` + `features/<id>.md` | Status index (always loaded) + detail (on demand) |
-| Verification | `init.sh` | Quick and full checks the agent runs before claiming done |
-| Scope | Done criteria + `depends_on` | Prevents overreach and half-finished work |
-| Lifecycle | Append-only `progress.md` + end-of-session routine | Makes the next session restartable |
-
----
+Never create empty documents to match the tree. Follow existing repository conventions and link existing sources of truth instead of duplicating them.
 
 ## Install
-
-### Via `npx skills` (harness-slim only)
 
 ```bash
 npx skills add tungxuan1656/harness-slim --skill harness-slim
 ```
 
-or
+The repository also includes optional companion skills under [`skills/`](skills/).
+
+## Usage
 
 ```bash
-npx skills add tungxuan1656/harness-slim
-```
-
-### Clone for all bundled skills
-
-To get `harness-slim` plus the 10 companion skills in one go, clone the repo and copy the `skills/` folder:
-
-```bash
-git clone https://github.com/tungxuan1656/harness-slim /tmp/harness-slim
-mkdir -p .agents/skills
-cp -R /tmp/harness-slim/skills/* .agents/skills/
-```
-
----
-
-## Use
-
-```bash
-# Create a harness in a project
+# Create a harness
 node skills/harness-slim/scripts/create-harness.mjs --target /path/to/project
 
-# Check current harness state
-bash skills/harness-slim/scripts/check-state.sh /path/to/project/feature_index.json
+# Check state from the generated project root
+./scripts/check-state.sh feature_index.json
 
-# Validate harness structure (heuristic five-subsystem score plus hard gates)
+# Audit the harness
 node skills/harness-slim/scripts/validate-harness.mjs --target /path/to/project
-
-# HTML assessment report
-node skills/harness-slim/scripts/run-benchmark.mjs --target /path/to/project --html report.html
 ```
 
-The validator score is a heuristic signal from structural checks, not a quality
-claim. Validation also applies hard state/file gates, including valid semantic
-feature state and required harness files; a failed gate makes validation fail
-even when the heuristic score is high. Neither replaces real before/after
-agent-session testing.
-
-Options for `create-harness.mjs`:
+Generator options:
 
 | Flag | Description |
 |---|---|
-| `--target DIR` | Target project directory (default: current dir) |
-| `--package-manager npm\|pnpm\|yarn\|bun` | Override auto-detected package manager |
-| `--commands "cmd1,cmd2"` | Custom verification commands |
+| `--target DIR` | Target project directory; defaults to the current directory |
+| `--package-manager npm\|pnpm\|yarn\|bun` | Override package-manager detection |
+| `--commands "cmd1,cmd2"` | Use custom verification commands |
 | `--force` | Overwrite existing harness files |
-
----
-
-## Typical session flow
-
-```
-User:  implement the next feature
-Agent: [reads feature_index.json, finds active feat]
-Agent: [reads features/<id>.md — objective and done criteria]
-Agent: [runs ./init.sh — confirms environment is healthy]
-Agent: [implements the feature]
-Agent: [runs ./init.sh full — configured lint + static/type + test checks]
-Agent: [marks done in feature_index.json, records evidence in features/<id>.md]
-Agent: [prepends block to progress.md, commits]
-```
-
-The agent works one feature at a time and does not move to the next unless instructed.
-
----
 
 ## Requirements
 
-Node.js 20+ is required for the scripts and semantic state validation
-(`create-harness.mjs`, `validate-harness.mjs`, and `check-state.sh`). `init.sh`
-requires bash plus the tools used by the detected project stack; absent project
-commands are reported rather than invented.
+- Node.js 20+ for the skill's generator, validator, and reports.
+- Bash and `jq` for generated state checks.
+- Project-specific tools used by `init.sh`.
 
----
+## Design principles
 
-## Optional companion skills
+- At most one active feature; zero means idle.
+- Load feature and project details only when relevant.
+- Record verification evidence before marking work done.
+- Keep progress append-only and restartable.
+- Keep `AGENTS.md` concise and `docs/README.md` authoritative.
+- Create documentation only from inspected evidence.
 
-`harness-slim` is intentionally slim — it works standalone and has no dependencies on the skills below. The companions are optional: pick what fits your workflow.
+## References
 
-All skills live in `skills/`. To use any of them, copy the relevant folder into your project's `.agents/skills/` (or wherever your agent tool expects them).
+- [Anthropic: Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)
+- [Anthropic: Harness design for long-running application development](https://www.anthropic.com/engineering/harness-design-long-running-apps)
+- [OpenAI: Harness Engineering](https://openai.com/index/harness-engineering/)
+- [OpenAI: Using PLANS.md for multi-hour problem solving](https://developers.openai.com/cookbook/articles/codex_exec_plans)
 
-| Skill | What it does | Source |
-|---|---|---|
-| [`brainstorming`](skills/brainstorming/) | Explore requirements and design before touching code — produces a spec, then hands off to `writing-plans` | [obra/superpowers](https://github.com/obra/superpowers) |
-| [`codebase-design`](skills/codebase-design/) | Shared vocabulary for designing deep modules: module, interface, depth, seam, adapter, leverage, locality | [mattpocock/skills](https://github.com/mattpocock/skills) |
-| [`writing-plans`](skills/writing-plans/) | Turn a spec into a bite-sized implementation plan with TDD steps, file map, and done criteria | [obra/superpowers](https://github.com/obra/superpowers) |
-| [`subagent-driven-development`](skills/subagent-driven-development/) | Execute a plan by dispatching one fresh subagent per task, with per-task review and a final whole-branch review | [obra/superpowers](https://github.com/obra/superpowers) |
-| [`executing-plans`](skills/executing-plans/) | Inline plan execution with review checkpoints — fallback when subagents are not available | [obra/superpowers](https://github.com/obra/superpowers) |
-| [`systematic-debugging`](skills/systematic-debugging/) | Four-phase debugging: root cause first, pattern analysis, hypothesis testing, then fix — never guess | [obra/superpowers](https://github.com/obra/superpowers) |
-| [`verification-before-completion`](skills/verification-before-completion/) | Evidence before claims — run the verification command, read the output, only then declare done | [obra/superpowers](https://github.com/obra/superpowers) |
-| [`git-commit`](skills/git-commit/) | Conventional commit messages auto-generated from diff — type, scope, description, safety rules | [github/awesome-copilot](https://github.com/github/awesome-copilot) |
-| [`handoff`](skills/handoff/) | Compact the current session into a handoff document so a fresh agent can resume without losing context | [mattpocock/skills](https://github.com/mattpocock/skills) |
-| [`find-skills`](skills/find-skills/) | Search and install skills from the open agent skills ecosystem at [skills.sh](https://skills.sh) | [vercel-labs/skills](https://github.com/vercel-labs/skills) |
-
----
-
-## Acknowledgments
-
-Special thanks to [walkinglabs/learn-harness-engineering](https://github.com/walkinglabs/learn-harness-engineering), which served as the original prototype and inspiration for this project.
-
----
+Inspired in part by [walkinglabs/learn-harness-engineering](https://github.com/walkinglabs/learn-harness-engineering).
 
 ## Contributing
 

@@ -1,14 +1,15 @@
 #!/usr/bin/env node
-import { chmod, mkdir } from 'node:fs/promises';
+import { chmod, mkdir, rm } from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
+  copyFileSafe,
   copyTemplate,
   detectPackageManager,
   detectProject,
   exists,
   parseArgs,
-  verificationCommands,
-  writeText
+  verificationCommands
 } from './lib/harness-utils.mjs';
 
 const args = parseArgs(process.argv.slice(2));
@@ -22,14 +23,37 @@ Creates a minimal harness in target directory:
   features/feat-001.md
   init.sh
   progress.md
-  check-state.sh
+  docs/README.md
+  scripts/check-state.sh
 
-Existing files are skipped unless --force is set.`);
+If any managed harness file already exists, creation stops before writing.
+Use --force to overwrite the complete harness in one pass.`);
   process.exit(0);
 }
 
 const target = path.resolve(args.target || args._[0] || process.cwd());
 const force = Boolean(args.force);
+const managedPaths = [
+  'AGENTS.md',
+  'feature_index.json',
+  'progress.md',
+  'docs/README.md',
+  'features/feat-001.md',
+  'init.sh',
+  'scripts/check-state.sh'
+];
+const conflicts = [];
+for (const relativePath of managedPaths) {
+  if (await exists(path.join(target, relativePath))) conflicts.push(relativePath);
+}
+if (conflicts.length > 0 && !force) {
+  console.error(`Harness files already exist:\n${conflicts.map((item) => `  - ${item}`).join('\n')}`);
+  console.error('No files were changed. Re-run with --force to overwrite the complete harness.');
+  process.exit(1);
+}
+if (force) {
+  await rm(path.join(target, 'check-state.sh'), { force: true });
+}
 const project = await detectProject(target);
 project.packageManager = detectPackageManager(target, args.packageManager);
 const commands = args.commands
@@ -45,6 +69,7 @@ const replacements = {
   PROJECT_PURPOSE: project.stack === 'generic'
     ? 'Project harness for reliable agent-assisted development.'
     : `Project harness for reliable agent-assisted development in a ${project.stack} codebase.`,
+  PROJECT_STACK: project.stack,
   VERIFICATION_COMMANDS: commands.map((command) => `- \`${command}\``).join('\n'),
   CONFIGURED_COMMANDS: configuredCommands.map((command) => `  ${shellQuote(command)}`).join('\n')
 };
@@ -55,6 +80,7 @@ const results = [];
 results.push(await copyTemplate('agents.md', path.join(target, 'AGENTS.md'), replacements, { force }));
 results.push(await copyTemplate('feature_index.json', path.join(target, 'feature_index.json'), {}, { force }));
 results.push(await copyTemplate('progress.md', path.join(target, 'progress.md'), {}, { force }));
+results.push(await copyTemplate('docs/README.md', path.join(target, 'docs', 'README.md'), {}, { force }));
 
 // Feature detail directory + first placeholder
 const featuresDir = path.join(target, 'features');
@@ -69,18 +95,10 @@ if (force || !await exists(initPath)) {
   results.push({ path: initPath, status: 'skipped', reason: 'exists' });
 }
 
-// check-state.sh
-const checkStatePath = path.join(target, 'check-state.sh');
-if (force || !await exists(checkStatePath)) {
-  const templatePath = new URL('../scripts/check-state.sh', import.meta.url).pathname;
-  const { readFile } = await import('node:fs/promises');
-  const content = await readFile(templatePath, 'utf8');
-  await writeText(checkStatePath, content);
-  await chmod(checkStatePath, 0o755);
-  results.push({ path: checkStatePath, status: 'written' });
-} else {
-  results.push({ path: checkStatePath, status: 'skipped', reason: 'exists' });
-}
+const checkStatePath = path.join(target, 'scripts', 'check-state.sh');
+const sourceScript = fileURLToPath(new URL('./check-state.sh', import.meta.url));
+results.push(await copyFileSafe(sourceScript, checkStatePath, { force }));
+await chmod(checkStatePath, 0o755);
 
 console.log(`Created harness for ${target}`);
 console.log(`Detected stack: ${project.stack}`);

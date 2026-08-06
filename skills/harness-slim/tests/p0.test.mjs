@@ -1,12 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import {
+  loadHarnessFiles,
+  scoreHarness,
   validateFeatureIndex,
   validateFeatureIndexFile
 } from '../scripts/lib/harness-utils.mjs';
@@ -73,17 +76,62 @@ const feature = (id, status, depends_on = []) => ({
   depends_on
 });
 
-test('generator uses feat-001 as the bootstrap active feature', async () => {
+test('generator creates an idle bootstrap harness with the shell state checker and docs map', async () => {
   const root = await tempDir();
   try {
     await execFileAsync('node', [createScript, '--target', root]);
     const index = JSON.parse(await readFile(path.join(root, 'feature_index.json'), 'utf8'));
-    assert.equal(index.features.find((item) => item.id === 'feat-001').status, 'active');
+    assert.equal(index.features.find((item) => item.id === 'feat-001').status, 'todo');
     assert.ok(index.features.filter((item) => item.status === 'todo').some((item) => item.id === 'feat-002'));
-    const state = await execFileAsync('bash', [checkState, path.join(root, 'feature_index.json')]);
-    assert.match(state.stdout, /Active\s+: feat-001/);
+    assert.equal(existsSync(path.join(root, 'scripts', 'check-state.sh')), true);
+    assert.equal(existsSync(path.join(root, 'check-state.mjs')), false);
+    assert.equal(existsSync(path.join(root, 'scripts', 'lib', 'harness-utils.mjs')), false);
+    assert.equal(existsSync(path.join(root, 'docs', 'README.md')), true);
+    assert.equal(existsSync(path.join(root, 'architecture.md')), false);
+    const docsMap = await readFile(path.join(root, 'docs', 'README.md'), 'utf8');
+    assert.match(docsMap, /This is a menu, not a required scaffold/);
+    assert.match(docsMap, /Small or straightforward project/);
+    assert.match(docsMap, /Large, regulated, or operationally critical project/);
+    const generatedAgents = await readFile(path.join(root, 'AGENTS.md'), 'utf8');
+    assert.match(generatedAgents, /Detected stack: `generic`/);
+    assert.doesNotMatch(generatedAgents, /\[language \+ version\]/);
+    const state = await execFileAsync('bash', [path.join(root, 'scripts', 'check-state.sh'), 'feature_index.json'], { cwd: root });
+    assert.match(state.stdout, /none \(idle\)/);
+    assert.match(state.stdout, /Progress: 0\/2 done/);
+    const init = await execFileAsync('bash', [path.join(root, 'init.sh')], { cwd: root });
+    assert.match(init.stdout, /Active: none \(idle\)/);
+    const generatedInit = await readFile(path.join(root, 'init.sh'), 'utf8');
+    assert.doesNotMatch(generatedInit, /node -e|<<['"]?NODE|require\(/);
+    const score = scoreHarness(await loadHarnessFiles(root));
+    assert.ok(score.overall >= 90, `fresh harness score was ${score.overall}`);
     const validation = await execFileAsync('node', [validateScript, '--target', root]);
     assert.match(validation.stdout, /State\/file gates:\n  PASS/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('generator aborts on conflicts and --force overwrites the complete harness', async () => {
+  const root = await tempDir();
+  try {
+    await mkdir(path.join(root, 'scripts'), { recursive: true });
+    await writeFile(path.join(root, 'AGENTS.md'), 'old instructions\n', 'utf8');
+    await writeFile(path.join(root, 'check-state.sh'), '#!/usr/bin/env bash\nexit 0\n', 'utf8');
+    await writeFile(path.join(root, 'scripts', 'check-state.sh'), '#!/usr/bin/env bash\nexit 0\n', 'utf8');
+
+    await assert.rejects(
+      execFileAsync('node', [createScript, '--target', root]),
+      (error) => /No files were changed.*--force/s.test(`${error.stdout}\n${error.stderr}`)
+    );
+    assert.equal(await readFile(path.join(root, 'AGENTS.md'), 'utf8'), 'old instructions\n');
+    assert.equal(existsSync(path.join(root, 'feature_index.json')), false);
+
+    await execFileAsync('node', [createScript, '--target', root, '--force']);
+    assert.doesNotMatch(await readFile(path.join(root, 'AGENTS.md'), 'utf8'), /old instructions/);
+    assert.match(await readFile(path.join(root, 'scripts', 'check-state.sh'), 'utf8'), /command -v jq/);
+    assert.equal(existsSync(path.join(root, 'check-state.sh')), false);
+    assert.equal(existsSync(path.join(root, 'feature_index.json')), true);
+    assert.equal(existsSync(path.join(root, 'docs', 'README.md')), true);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -115,8 +163,8 @@ test('semantic validator enforces active and dependency invariants', async () =>
   assert.ok(multiple.errors.some((error) => /at most one active/.test(error)));
 
   const zeroWithWork = validateFeatureIndex(indexWith([feature('a', 'todo')]));
-  assert.equal(zeroWithWork.valid, false);
-  assert.ok(zeroWithWork.errors.some((error) => /exactly one active/.test(error)));
+  assert.equal(zeroWithWork.valid, true);
+  assert.deepEqual(zeroWithWork.errors, []);
 
   const duplicate = validateFeatureIndex(indexWith([feature('a', 'active'), feature('a', 'done')]));
   assert.equal(duplicate.valid, false);
@@ -125,6 +173,75 @@ test('semantic validator enforces active and dependency invariants', async () =>
   const missingDependency = validateFeatureIndex(indexWith([feature('a', 'active', ['missing'])]));
   assert.equal(missingDependency.valid, false);
   assert.ok(missingDependency.errors.some((error) => /missing feature/.test(error)));
+
+  const cycle = validateFeatureIndex(indexWith([
+    feature('feat-a', 'todo', ['feat-b']),
+    feature('feat-b', 'todo', ['feat-a'])
+  ]));
+  assert.equal(cycle.valid, false);
+  assert.ok(cycle.errors.some((error) => /dependency cycle detected/.test(error)));
+});
+
+test('shell state checker rejects malformed, duplicate, and missing-dependency state', async () => {
+  const root = await tempDir();
+  try {
+    const malformed = path.join(root, 'feature_index.json');
+    await writeFile(malformed, '{bad json', 'utf8');
+    await assert.rejects(
+      execFileAsync('bash', [checkState, malformed]),
+      (error) => /malformed feature_index\.json/.test(`${error.stdout}\n${error.stderr}`)
+    );
+
+    await writeFile(malformed, '{}{}', 'utf8');
+    await assert.rejects(
+      execFileAsync('bash', [checkState, malformed]),
+      (error) => /must contain one JSON document/.test(`${error.stdout}\n${error.stderr}`)
+    );
+
+    const duplicate = await writeIndex(root, indexWith([
+      feature('feat-001', 'active'),
+      feature('feat-001', 'done')
+    ]));
+    await assert.rejects(
+      execFileAsync('bash', [checkState, duplicate]),
+      (error) => /duplicate feature id/.test(`${error.stdout}\n${error.stderr}`)
+    );
+
+    const missingDependency = await writeIndex(root, indexWith([
+      feature('feat-001', 'active', ['feat-999'])
+    ]));
+    await assert.rejects(
+      execFileAsync('bash', [checkState, missingDependency]),
+      (error) => /missing dependency/.test(`${error.stdout}\n${error.stderr}`)
+    );
+
+    const cycle = await writeIndex(root, indexWith([
+      feature('feat-a', 'todo', ['feat-b']),
+      feature('feat-b', 'todo', ['feat-a'])
+    ]));
+    await assert.rejects(
+      execFileAsync('bash', [checkState, cycle]),
+      (error) => /dependency cycle detected/.test(`${error.stdout}\n${error.stderr}`)
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('init fails early with an accurate error when jq is unavailable', async () => {
+  const root = await tempDir();
+  try {
+    await execFileAsync('node', [createScript, '--target', root]);
+    await assert.rejects(
+      execFileAsync('/bin/bash', [path.join(root, 'init.sh')], {
+        cwd: root,
+        env: { ...process.env, PATH: root }
+      }),
+      (error) => /FAIL jq is required/.test(`${error.stdout}\n${error.stderr}`)
+    );
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test('active detail is required and index-relative paths are honored', async () => {
@@ -134,10 +251,14 @@ test('active detail is required and index-relative paths are honored', async () 
     const invalid = await validateFeatureIndexFile(missingDetail);
     assert.equal(invalid.valid, false);
     assert.ok(invalid.errors.some((error) => /detail missing/.test(error)));
+    await assert.rejects(
+      execFileAsync('bash', [checkState, missingDetail]),
+      (error) => /detail missing/.test(`${error.stdout}\n${error.stderr}`)
+    );
 
     const nestedIndex = await writeIndex(root, indexWith([feature('nested', 'active')]), { relativeDir: 'state' });
     const checked = await execFileAsync('bash', [checkState, path.relative(root, nestedIndex)], { cwd: root });
-    assert.match(checked.stdout, /Active\s+: nested/);
+    assert.match(checked.stdout, /Active: nested/);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
@@ -239,7 +360,7 @@ test('unsafe feature IDs are rejected by the shared validator and check-state', 
     assert.ok(semantic.errors.some((error) => /lowercase|unsafe|hyphens/.test(error)));
     await assert.rejects(
       execFileAsync('bash', [checkState, indexPath]),
-      (error) => /lowercase|unsafe|hyphens/.test(`${error.stdout}\n${error.stderr}`)
+      (error) => /invalid feature schema/.test(`${error.stdout}\n${error.stderr}`)
     );
   } finally {
     await rm(root, { recursive: true, force: true });
@@ -258,7 +379,7 @@ test('active dependency ordering is enforced in both state validators', async ()
     assert.ok(semantic.errors.some((error) => /cannot be active until dependencies are done/.test(error)));
     await assert.rejects(
       execFileAsync('bash', [checkState, invalidIndex]),
-      (error) => /cannot be active until dependencies are done/.test(`${error.stdout}\n${error.stderr}`)
+      (error) => /active feature has unfinished dependencies/.test(`${error.stdout}\n${error.stderr}`)
     );
 
     const validIndex = await writeIndex(root, indexWith([
@@ -322,10 +443,15 @@ test('HTML and benchmark reports expose invalid hard gates and fail', async () =
 
 test('generated micro-change rules are bounded and evidence-driven', async () => {
   const agents = await readFile(agentsTemplate, 'utf8');
-  assert.match(agents, /planning shortcut only/);
-  assert.match(agents, /non-behavior-changing maintenance/);
-  assert.match(agents, /explicitly scoped exception requires direct user authorization/);
-  assert.match(agents, /must not change the active feature's state, scope, dependencies, or done criteria/);
-  assert.match(agents, /Run proportional applicable verification/);
-  assert.match(agents, /new append-only `progress\.md` block/);
+  assert.match(agents, /small maintenance change outside an active feature requires explicit user scope/);
+  assert.match(agents, /Record its files, verification, evidence, and next state/);
+  assert.match(agents, /when risk or intent is unclear, use a feature/);
+  assert.match(agents, /Run proportional, applicable verification/);
+});
+
+test('generated instructions route project knowledge through the docs map', async () => {
+  const agents = await readFile(agentsTemplate, 'utf8');
+  assert.match(agents, /docs\/README\.md/);
+  assert.match(agents, /concise map/);
+  assert.match(agents, /do not force 80-character wrapping/);
 });

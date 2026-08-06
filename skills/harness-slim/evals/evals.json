@@ -5,15 +5,18 @@
       "id": 1,
       "name": "Minimal Harness Creation",
       "prompt": "I have a new TypeScript + React project with no agent setup. Create a minimal harness that makes my agent reliable for single-feature development.",
-      "expected_output": "AGENTS.md, feature_index.json with fresh feat-001 active state (and feat-002 todo), features/feat-001.md, init.sh with quick/full verification semantics, progress.md, and check-state.sh",
+      "expected_output": "A concise AGENTS.md, idle feature_index.json, features/feat-001.md, init.sh, progress.md, docs/README.md, and scripts/check-state.sh",
       "files": [],
       "expectations": [
         "AGENTS.md includes startup workflow (read files, run init, check feature index)",
-        "AGENTS.md includes one-feature-at-a-time policy",
+        "AGENTS.md includes a short routing/invariants policy: zero or one active feature is valid, and the agent does not promote a todo feature without instruction",
         "feature_index.json has valid JSON whose feature entries use id, title, status, priority, and depends_on",
-        "feature_index.json starts with exactly one active feat-001 feature",
+        "feature_index.json starts idle with feat-001 and feat-002 todo features",
         "init.sh runs quick fast/static checks and full configured verification; configured failures fail while absent commands warn or are not applicable",
-        "All files are in project root directory"
+        "scripts/check-state.sh uses jq and validates schema, dependencies, active state, and the active detail file",
+        "docs/README.md maps only existing, evidence-grounded project documents",
+        "AGENTS.md remains a concise map and does not invent project-specific architecture or convention facts",
+        "Specialized project documents are selected after repository inspection rather than generated as empty placeholders"
       ]
     },
     {
@@ -47,11 +50,11 @@
       "id": 4,
       "name": "Verification Workflow Design",
       "prompt": "My agent says 'done' but the tests fail. Design a verification workflow that forces the agent to actually verify before claiming completion.",
-      "expected_output": "Verification commands list, AGENTS.md section updates, optional quality score tracking",
+      "expected_output": "Verification commands list, short AGENTS.md routing/invariants updates, optional quality score tracking",
       "files": [],
       "expectations": [
         "Explicit verification commands listed (tests, lint, type-check, build)",
-        "AGENTS.md includes Definition of Done section with verification requirement",
+        "AGENTS.md includes a completion/evidence requirement with verification requirement",
         "End-of-session checklist includes verification evidence recording",
         "Failure path says not to claim done when verification fails"
       ]
@@ -60,13 +63,14 @@
       "id": 5,
       "name": "Memory Taxonomy Design",
       "prompt": "I want my agent to remember project conventions and user preferences across sessions. Design a memory taxonomy and tell me what belongs where.",
-      "expected_output": "Memory layer definitions, type taxonomy for auto-memory, what to save vs what to skip",
+      "expected_output": "Memory layer definitions, type taxonomy for auto-memory, what to save vs what to skip, and an evidence-based warning not to invent project-specific conventions",
       "files": [],
       "expectations": [
         "Instruction memory defined (human-curated, version-controlled)",
         "Auto-memory defined (agent-written, persistent)",
         "Type taxonomy with 3-4 types (e.g., user/feedback/project/reference)",
-        "Clear guidance on what NOT to save (derivable content)"
+        "Clear guidance on what NOT to save (derivable content)",
+        "Project-specific architecture and convention facts are recorded only from inspected evidence, not inferred by the generator"
       ]
     },
     {
@@ -125,7 +129,7 @@
       "id": 10,
       "name": "Scripted Harness Validation",
       "prompt": "Use the harness-slim scripts to scaffold a harness, validate it, and produce an HTML assessment report for a repository.",
-      "expected_output": "Commands using create-harness.mjs, validate-harness.mjs, and render-assessment-html.mjs plus interpretation of score",
+      "expected_output": "Commands using create-harness.mjs, validate-harness.mjs, render-assessment-html.mjs, and ./scripts/check-state.sh feature_index.json plus interpretation of score",
       "files": [],
       "expectations": [
         "Uses create-harness.mjs with a target directory",

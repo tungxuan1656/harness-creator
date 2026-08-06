@@ -48,19 +48,16 @@ Options:
 - `--commands "cmd one,cmd two"` for custom verification.
 - `--force` only after confirming overwrites are acceptable.
 
-Explain what was created and how to replace placeholder feature entries.
+Explain what was created and how to replace placeholder feature entries. Then inspect the repository using the [Repository Knowledge Architecture](references/repository-knowledge-architecture.md) rubric: keep `docs/README.md` as the map and create only the durable project documents supported by evidence.
 
 ### Check harness state
 
 ```bash
-bash skills/harness-slim/scripts/check-state.sh /path/to/project/feature_index.json
+# Run from the generated project root
+./scripts/check-state.sh feature_index.json
 ```
 
-Validates `feature_index.json` semantically, then shows active/blocked/todo
-features and overall progress. It checks the required `id`, `title`, `status`,
-`priority`, and `depends_on` fields, dependencies, active-feature invariant,
-and active detail file. It exits nonzero on failures. Run before starting a new
-feat or after marking one done.
+Uses Bash and `jq` to validate `feature_index.json`, then shows active, blocked, todo, and overall progress. It checks required fields, IDs, dependencies, the at-most-one-active invariant, dependency order, and the active detail file. It exits nonzero on failures. A fresh harness is idle; the agent must not promote todo work without instruction.
 
 ### Audit an existing harness
 
@@ -93,17 +90,23 @@ Load only the reference needed for the problem:
 
 ## Design Rules
 
-- Keep `AGENTS.md` short: routing and invariants, not a full manual.
+- Keep `AGENTS.md` concise: include the routing and invariants every coding task needs, without turning it into a project manual.
+- Follow the target repository's Markdown style; do not hard-wrap prose automatically.
 - Put project facts in project docs, not in the skill.
+- Keep `docs/README.md` as the documentation map. Create only the smallest evidence-grounded set of project documents, list every created document there, and load details on demand.
+- Do not claim that the generator inferred project-specific architecture or conventions; it only detects supported stack and verification signals.
 - Make verification commands explicit and runnable.
 - Require evidence before marking a feature done.
-- Use one active feature unless the harness has explicit multi-agent ownership boundaries.
+- Use at most one active feature; zero active features is valid during an idle bootstrap. Do not promote todo work without instruction.
 - Prefer append/prepend state files over relying on chat history.
 - Never hide destructive behavior in scripts; overwrites require explicit user approval.
 - `init.sh quick` runs available fast/static checks for startup; `init.sh full`
   runs configured lint, static/type, and test checks before marking done.
   Configured command failures fail the script. Missing commands are warnings or
   not applicable and do not fail it.
+- Record baseline failures. If a failure blocks the requested work, stop and ask;
+  repair it only when authorized or within the selected scope.
+- Do not impose a universal commit policy; follow the target repository's convention.
 
 ## Deliverable Checklist
 
@@ -114,6 +117,13 @@ For a usable minimal harness, leave the target project with:
 - [ ] `features/feat-001.md` (at least one feature detail file)
 - [ ] `init.sh`
 - [ ] `progress.md`
-- [ ] `check-state.sh` or equivalent state-check script
+- [ ] `docs/README.md`
+- [ ] `scripts/check-state.sh`
 
 If you cannot create files, provide exact file contents and commands instead.
+
+## Runtime requirement
+
+Node.js 20+ is required for the skill's generator, validator, and report scripts. Generated projects require Bash and `jq` for `scripts/check-state.sh`; `init.sh` also requires the detected project's verification tools.
+
+The generator always creates the `docs/README.md` map but no specialized documentation. Use the [optional architecture template](templates/architecture.md), or create another document type, only when inspection shows that durable knowledge is repeatedly needed and cannot be inferred reliably from code.

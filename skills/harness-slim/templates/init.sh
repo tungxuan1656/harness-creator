@@ -16,6 +16,11 @@ if [ "$MODE" != "quick" ] && [ "$MODE" != "full" ]; then
   exit 2
 fi
 
+if ! command -v jq >/dev/null 2>&1; then
+  echo "FAIL jq is required by init.sh and scripts/check-state.sh" >&2
+  exit 1
+fi
+
 echo "=== Init [mode: $MODE] ==="
 
 absent() {
@@ -39,32 +44,32 @@ run_check() {
   return 1
 }
 
-run_node_script() {
+run_package_script() {
   local script="$1"
   if [ "$PM" = "npm" ]; then npm run "$script"; else "$PM" run "$script"; fi
 }
 
-has_node_script() {
-  node -e "const scripts=require('./package.json').scripts||{}; process.exit(scripts[process.argv[1]] ? 0 : 1)" "$1" 2>/dev/null
+has_package_script() {
+  jq -e --arg script "$1" '.scripts[$script] | type == "string" and length > 0' package.json >/dev/null 2>&1
 }
 
-node_check_or_absent() {
+package_check_or_absent() {
   local label="$1"
   local script="$2"
-  if has_node_script "$script"; then
-    run_check "$label ($script)" run_node_script "$script" || STATUS=1
+  if has_package_script "$script"; then
+    run_check "$label ($script)" run_package_script "$script" || STATUS=1
   else
     absent "$label"
   fi
 }
 
-node_type_check() {
-  if has_node_script check; then
-    run_check "type-check (check)" run_node_script check || STATUS=1
-  elif has_node_script typecheck; then
-    run_check "type-check (typecheck)" run_node_script typecheck || STATUS=1
-  elif has_node_script type-check; then
-    run_check "type-check (type-check)" run_node_script type-check || STATUS=1
+package_type_check() {
+  if has_package_script check; then
+    run_check "type-check (check)" run_package_script check || STATUS=1
+  elif has_package_script typecheck; then
+    run_check "type-check (typecheck)" run_package_script typecheck || STATUS=1
+  elif has_package_script type-check; then
+    run_check "type-check (type-check)" run_package_script type-check || STATUS=1
   else
     absent "type-check"
   fi
@@ -121,13 +126,18 @@ if [ -f package.json ]; then
   else PM="npm"; fi
 
   [ -d node_modules ] || echo "⚠️  node_modules missing; no dependency installation will be attempted."
-  node_type_check
-  if [ "$MODE" = "quick" ]; then
-    not_applicable "lint (full mode only)"
-    not_applicable "test (full mode only)"
+  if ! jq empty package.json >/dev/null 2>&1; then
+    echo "FAIL package.json is not valid JSON"
+    STATUS=1
   else
-    node_check_or_absent "lint" lint
-    node_check_or_absent "test" test
+    package_type_check
+    if [ "$MODE" = "quick" ]; then
+      not_applicable "lint (full mode only)"
+      not_applicable "test (full mode only)"
+    else
+      package_check_or_absent "lint" lint
+      package_check_or_absent "test" test
+    fi
   fi
 
 # ── Python ────────────────────────────────────────────────────────────────────
@@ -212,22 +222,11 @@ fi
 echo ""
 echo "=== Done ==="
 
-# Show the active feature using JSON parsing, not line-oriented text matching.
-if [ -f feature_index.json ]; then
-  if ! node - feature_index.json <<'NODE'
-const fs = require('node:fs');
-const index = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-const active = (index.features || []).filter((feature) => feature.status === 'active');
-if (active.length === 1) {
-  console.log(`Active feat: ${active[0].id} — ${active[0].title}`);
-} else {
-  console.log('No active feat — check feature_index.json');
-}
-NODE
-  then
-    echo "⚠️  Could not parse feature_index.json."
-    STATUS=1
-  fi
+if [ -f scripts/check-state.sh ]; then
+  bash scripts/check-state.sh feature_index.json || STATUS=1
+else
+  echo "FAIL scripts/check-state.sh is missing"
+  STATUS=1
 fi
 
 exit "$STATUS"

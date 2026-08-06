@@ -123,14 +123,47 @@ export function validateFeatureIndex(index, { detailDir } = {}) {
     }
   }
 
+  const graphIsComplete = ids.size === features.length && features.every((feature) =>
+    feature
+    && typeof feature.id === 'string'
+    && Array.isArray(feature.depends_on)
+    && feature.depends_on.every((dependency) => ids.has(dependency))
+  );
+  if (graphIsComplete) {
+    const graph = new Map(features.map((feature) => [feature.id, feature.depends_on]));
+    const visiting = new Set();
+    const visited = new Set();
+    const stack = [];
+
+    function findCycle(id) {
+      if (visiting.has(id)) return [...stack.slice(stack.indexOf(id)), id];
+      if (visited.has(id)) return null;
+      visiting.add(id);
+      stack.push(id);
+      for (const dependency of graph.get(id)) {
+        const cycle = findCycle(dependency);
+        if (cycle) return cycle;
+      }
+      stack.pop();
+      visiting.delete(id);
+      visited.add(id);
+      return null;
+    }
+
+    for (const id of graph.keys()) {
+      const cycle = findCycle(id);
+      if (cycle) {
+        errors.push(`dependency cycle detected: ${cycle.join(' -> ')}`);
+        break;
+      }
+    }
+  }
+
   const active = features.filter((feature) => feature?.status === 'active');
   const blocked = features.filter((feature) => feature?.status === 'blocked');
   const todo = features.filter((feature) => feature?.status === 'todo');
   const done = features.filter((feature) => feature?.status === 'done');
   if (active.length > 1) errors.push('feature index must have at most one active feature');
-  if (active.length === 0 && (todo.length > 0 || blocked.length > 0)) {
-    errors.push('feature index must have exactly one active feature while todo or blocked work remains');
-  }
 
   const featuresById = new Map(features.map((feature) => [feature?.id, feature]));
   for (const feature of active) {
@@ -313,16 +346,9 @@ export function verificationCommands(project, explicitPackageManager) {
   if (project.stack === 'dotnet') return ['dotnet test'];
 
   if (!project.packageJson) {
-    return [
-      'echo "No package manifest detected; replace this line with your project verification command."'
-    ];
+    return ['./init.sh', './init.sh full'];
   }
 
-  const install = pm === 'npm'
-    ? 'npm install'
-    : pm === 'yarn'
-      ? 'yarn install'
-      : `${pm} install`;
   const candidates = [
     scripts.check ? run('check') : null,
     scripts.typecheck ? run('typecheck') : null,
@@ -332,7 +358,7 @@ export function verificationCommands(project, explicitPackageManager) {
     scripts.build ? run('build') : null
   ].filter(Boolean);
 
-  return [install, ...dedupe(candidates)];
+  return candidates.length ? dedupe(candidates) : ['./init.sh', './init.sh full'];
 }
 
 export function initScriptFromCommands(commands) {
@@ -374,17 +400,19 @@ export function scoreHarness(files) {
   const checks = {
     instructions: [
       hasFile(byPath, ['AGENTS.md', 'CLAUDE.md'], 'Agent instruction file exists'),
-      structuredHas(agents, ['Startup Workflow', 'Before writing code'], 'Startup workflow documented'),
-      structuredHas(agents, ['Definition of Done', 'done only when'], 'Definition of done documented'),
+      structuredHas(agents, ['Startup Workflow', 'Before writing code', 'Startup (code work only)'], 'Startup workflow documented'),
+      structuredHas(agents, ['Definition of Done', 'done only when', 'Mark a feature done only after'], 'Definition of done documented'),
       structuredHas(agents, ['Verification Commands', './init.sh', 'test', 'verify'], 'Verification commands discoverable'),
-      structuredHas(agents, ['feature_index.json', 'features/', 'progress.md'], 'State artifacts routed from instructions')
+      structuredHas(agents, ['feature_index.json', 'features/', 'progress.md'], 'State artifacts routed from instructions'),
+      structuredHas(agents, ['docs/README.md'], 'Project documentation is routed on demand')
     ],
     state: [
       hasFile(byPath, ['feature_index.json'], 'Feature index exists'),
       jsonFeatureList(featureList, 'Feature index is valid and has required fields'),
       hasFile(byPath, ['progress.md'], 'Progress log exists'),
       structuredHas(progress, ['Status', 'Done', 'Next'], 'Progress log supports restart'),
-      textHas(allText, ['features/', 'feat-0', 'Done Criteria', 'Objective'], 'Feature detail files present')
+      textHas(allText, ['features/', 'feat-0', 'Done Criteria', 'Objective'], 'Feature detail files present'),
+      hasFile(byPath, ['scripts/check-state.sh'], 'State checker exists')
     ],
     verification: [
       hasFile(byPath, ['init.sh'], 'Verification entrypoint exists'),
@@ -394,11 +422,11 @@ export function scoreHarness(files) {
       textHas(allText, ['Evidence', 'Verification Evidence', 'command and output'], 'Verification evidence is recorded')
     ],
     scope: [
-      structuredHas(agents, ['One feature at a time', 'one-feature-at-a-time'], 'One-feature-at-a-time rule exists'),
+      structuredHas(agents, ['One feature at a time', 'one-feature-at-a-time', 'has at most one `active` feature'], 'One-feature-at-a-time rule exists'),
       textHas(featureList, ['dependencies', 'depends_on'], 'Feature dependencies are tracked'),
       textHas(agents + featureList, ['status'], 'Feature status is explicit'),
       structuredHas(agents, ['Stay in scope', 'scope'], 'Scope boundary documented'),
-      structuredHas(agents, ['Definition of Done'], 'Completion gate limits scope closure')
+      structuredHas(agents, ['Definition of Done', 'Mark a feature done only after'], 'Completion gate limits scope closure')
     ],
     lifecycle: [
       hasFile(byPath, ['init.sh'], 'Startup script exists'),
@@ -479,7 +507,9 @@ export async function loadHarnessFiles(root) {
     'CLAUDE.md',
     'feature_index.json',
     'progress.md',
-    'init.sh'
+    'init.sh',
+    'docs/README.md',
+    'scripts/check-state.sh'
   ];
   const files = [];
   for (const candidate of candidates) {
@@ -516,6 +546,8 @@ export async function validateHarnessTarget(root) {
   }
   if (!await exists(path.join(root, 'progress.md'))) hardFailures.push('progress.md is missing');
   if (!await exists(path.join(root, 'init.sh'))) hardFailures.push('init.sh is missing');
+  if (!await exists(path.join(root, 'docs', 'README.md'))) hardFailures.push('docs/README.md is missing');
+  if (!await exists(path.join(root, 'scripts', 'check-state.sh'))) hardFailures.push('scripts/check-state.sh is missing');
 
   const state = await exists(indexPath)
     ? await validateFeatureIndexFile(indexPath)
