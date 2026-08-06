@@ -6,6 +6,7 @@ import {
   loadHarnessFiles,
   parseArgs,
   scoreHarness,
+  validateHarnessTarget,
   writeText
 } from './lib/harness-utils.mjs';
 
@@ -25,6 +26,8 @@ const target = path.resolve(args.target || args._[0] || process.cwd());
 const minScore = Number(args.minScore || 70);
 const files = await loadHarnessFiles(target);
 const result = scoreHarness(files);
+const validation = await validateHarnessTarget(target);
+result.validation = validation;
 
 if (args.html) {
   const htmlPath = path.resolve(args.html);
@@ -36,8 +39,11 @@ if (args.json) {
   console.log(JSON.stringify(result, null, 2));
 } else {
   console.log(formatScoreReport(result, target));
+  console.log('State/file gates:');
+  for (const failure of validation.hardFailures) console.log(`  FAIL ${failure}`);
+  if (validation.hardFailures.length === 0) console.log('  PASS required state and file gates');
 }
 
-if (result.overall < minScore) {
+if (result.overall < minScore || validation.hardFailures.length > 0) {
   process.exitCode = 1;
 }

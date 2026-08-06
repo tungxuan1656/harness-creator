@@ -5,13 +5,14 @@
       "id": 1,
       "name": "Minimal Harness Creation",
       "prompt": "I have a new TypeScript + React project with no agent setup. Create a minimal harness that makes my agent reliable for single-feature development.",
-      "expected_output": "AGENTS.md (~50-100 lines), feature_list.json with 3-5 placeholder features, init.sh with verification commands",
+      "expected_output": "AGENTS.md, feature_index.json with fresh feat-001 active state (and feat-002 todo), features/feat-001.md, init.sh with quick/full verification semantics, progress.md, and check-state.sh",
       "files": [],
       "expectations": [
-        "AGENTS.md includes startup workflow (read files, run init, check feature list)",
+        "AGENTS.md includes startup workflow (read files, run init, check feature index)",
         "AGENTS.md includes one-feature-at-a-time policy",
-        "feature_list.json has valid JSON with id, name, description, status fields",
-        "init.sh runs install, type/static check, test, and build commands when available",
+        "feature_index.json has valid JSON whose feature entries use id, title, status, priority, and depends_on",
+        "feature_index.json starts with exactly one active feat-001 feature",
+        "init.sh runs quick fast/static checks and full configured verification; configured failures fail while absent commands warn or are not applicable",
         "All files are in project root directory"
       ]
     },
@@ -19,12 +20,12 @@
       "id": 2,
       "name": "Session Continuity Setup",
       "prompt": "My agent forgets everything between sessions. I need persistent memory and session handoff so it can work on multi-day features.",
-      "expected_output": "progress.md template, session-handoff.md structure, memory directory setup instructions",
+      "expected_output": "progress.md template, feature_index.json-based session continuity guidance, and conditional memory-directory setup instructions",
       "files": [],
       "expectations": [
         "progress.md includes sections: current state, what's done, what's in progress, blockers, next session should",
-        "session-handoff.md includes: what was accomplished, what remains, blockers/decisions, files modified",
-        "Instructions for memory directory creation (.claude/memory/ or similar)",
+        "Session continuity guidance records what was accomplished, what remains, blockers/decisions, files modified, and the next step in progress.md and the active feature detail",
+        "Instructions for memory directory creation (.claude/memory/ or similar) are conditional rather than part of the default generated harness",
         "Two-step save invariant explained (topic file then index)"
       ]
     },
@@ -37,6 +38,7 @@
       "expectations": [
         "Assessment covers all 5 subsystems: Instructions, State, Verification, Scope, Lifecycle",
         "Each subsystem scored 1-5 with justification",
+        "Heuristic scoring is reported separately from hard state/file gates",
         "Lowest-scoring subsystem identified as bottleneck or candidate bottleneck",
         "Prioritized improvement plan with 2-3 concrete next steps"
       ]
@@ -114,7 +116,7 @@
       "files": [],
       "expectations": [
         "init.sh is the standard startup and verification entrypoint",
-        "Startup reads AGENTS.md, feature_list.json, progress.md, and handoff when present",
+        "Startup reads AGENTS.md, feature_index.json, progress.md, and the active feature detail when present",
         "End-of-session procedure records evidence, blockers, and next step",
         "Hooks are gated by trust and failure behavior is explicit"
       ]
@@ -129,7 +131,7 @@
         "Uses create-harness.mjs with a target directory",
         "Uses validate-harness.mjs and explains five-subsystem score output",
         "Uses render-assessment-html.mjs or run-benchmark.mjs with --html",
-        "Explains that structural benchmark complements but does not replace real before/after agent sessions"
+        "Explains that heuristic scoring complements hard state/file gates and does not replace real before/after agent sessions"
       ]
     }
   ]

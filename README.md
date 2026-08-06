@@ -34,15 +34,26 @@ Running `create-harness.mjs` in a project produces:
 | `AGENTS.md` | Agent instructions: startup workflow, rules, behavioral guidelines, definition of done |
 | `feature_index.json` | Minimal feature index: id, title, status, priority, depends_on |
 | `features/feat-001.md` | Feature detail file: objective, done criteria, plan, evidence |
-| `init.sh` | Health check — `quick` mode (<5s) for startup, `full` mode before marking done |
+| `init.sh` | Health check with `quick` startup checks and `full` verification before marking done |
 | `progress.md` | Append-only session log — prepend per session, never edit old blocks |
-| `check-state.sh` | Show active/blocked/todo features and progress count |
+| `check-state.sh` | Validate semantic state, then show active/blocked/todo features and progress count |
+
+The generated index starts with `feat-001` as the single `active` feature and
+`feat-002` as `todo`. Every feature entry has the load-bearing fields `id`,
+`title`, `status`, `priority`, and `depends_on`; dependencies name other
+feature IDs. `check-state.sh` parses this JSON and checks the schema, duplicate
+IDs, dependencies, active-feature invariant, and active detail file. It exits
+nonzero when any of those checks fail.
 
 ### Design principles
 
 **One feature at a time.** The biggest agent failure mode: trying to implement everything at once, running out of context midway, leaving a half-implemented mess. `feature_index.json` keeps exactly one feature `active`.
 
-**Two verification modes.** `./init.sh` (quick, type-check only) for startup and mid-session checks. `./init.sh full` (lint + type in parallel, then test) only before marking a feature done. Fast feedback without blocking flow.
+**Two verification modes.** `./init.sh` (quick) runs the available fast/static
+check for startup and reports full-mode checks as not applicable. `./init.sh
+full` runs the configured lint, type/static, and test checks before marking a
+feature done. A configured command failure fails the script; an absent command
+is reported as a warning or not applicable and does not fail it.
 
 **Append-only progress log.** `progress.md` is prepend-only — each session adds a new block at the top, never editing old ones. Eliminates merge conflicts when teammates work on different features in parallel.
 
@@ -78,7 +89,7 @@ npx skills add tungxuan1656/harness-slim --skill harness-slim
 
 or
 
-```bass
+```bash
 npx skills add tungxuan1656/harness-slim
 ```
 
@@ -103,12 +114,18 @@ node skills/harness-slim/scripts/create-harness.mjs --target /path/to/project
 # Check current harness state
 bash skills/harness-slim/scripts/check-state.sh /path/to/project/feature_index.json
 
-# Validate harness structure (five-subsystem score)
+# Validate harness structure (heuristic five-subsystem score plus hard gates)
 node skills/harness-slim/scripts/validate-harness.mjs --target /path/to/project
 
 # HTML assessment report
 node skills/harness-slim/scripts/run-benchmark.mjs --target /path/to/project --html report.html
 ```
+
+The validator score is a heuristic signal from structural checks, not a quality
+claim. Validation also applies hard state/file gates, including valid semantic
+feature state and required harness files; a failed gate makes validation fail
+even when the heuristic score is high. Neither replaces real before/after
+agent-session testing.
 
 Options for `create-harness.mjs`:
 
@@ -129,7 +146,7 @@ Agent: [reads feature_index.json, finds active feat]
 Agent: [reads features/<id>.md — objective and done criteria]
 Agent: [runs ./init.sh — confirms environment is healthy]
 Agent: [implements the feature]
-Agent: [runs ./init.sh full — lint + type + test]
+Agent: [runs ./init.sh full — configured lint + static/type + test checks]
 Agent: [marks done in feature_index.json, records evidence in features/<id>.md]
 Agent: [prepends block to progress.md, commits]
 ```
@@ -140,7 +157,10 @@ The agent works one feature at a time and does not move to the next unless instr
 
 ## Requirements
 
-Node.js 20+ is required for the scripts (`create-harness.mjs`, `validate-harness.mjs`). `check-state.sh` and `init.sh` require only bash, grep, and sed — no external dependencies.
+Node.js 20+ is required for the scripts and semantic state validation
+(`create-harness.mjs`, `validate-harness.mjs`, and `check-state.sh`). `init.sh`
+requires bash plus the tools used by the detected project stack; absent project
+commands are reported rather than invented.
 
 ---
 

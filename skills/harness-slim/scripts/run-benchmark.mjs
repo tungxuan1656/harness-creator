@@ -12,6 +12,7 @@ import {
   parseArgs,
   readJson,
   scoreHarness,
+  validateHarnessTarget,
   writeText
 } from './lib/harness-utils.mjs';
 
@@ -39,6 +40,8 @@ const output = path.resolve(args.output || path.join(target, 'harness-benchmark.
 const evalPath = path.resolve(args.evals || path.join(skillRoot, 'evals', 'evals.json'));
 
 const harnessResult = scoreHarness(await loadHarnessFiles(target));
+const validation = await validateHarnessTarget(target);
+harnessResult.validation = validation;
 const evals = await readJson(evalPath);
 const evalResult = scoreEvals(evals);
 const selfCheck = args.noSelfCheck ? { skipped: true } : await runSelfCheck();
@@ -47,6 +50,7 @@ const report = {
   target,
   selfCheck,
   harness: harnessResult,
+  validation,
   evals: evalResult,
   recommendation: recommend(harnessResult, evalResult)
 };
@@ -59,6 +63,8 @@ if (!selfCheck.skipped) {
   if (!selfCheck.pass && selfCheck.error) console.log(`  ${selfCheck.error}`);
 }
 console.log(formatScoreReport(harnessResult, target));
+console.log(`State/file gates: ${validation.hardFailures.length ? 'INVALID' : 'PASS'}`);
+for (const failure of validation.hardFailures) console.log(`  FAIL ${failure}`);
 console.log(`Eval coverage: ${evalResult.score}/100 (${evalResult.passed}/${evalResult.total})`);
 console.log(`Recommendation: ${report.recommendation}`);
 
@@ -70,6 +76,7 @@ if (args.html) {
 
 if (
   harnessResult.overall < Number(args.minScore || 70) ||
+  validation.hardFailures.length > 0 ||
   evalResult.score < Number(args.minEvalScore || 80) ||
   selfCheck.pass === false
 ) {
@@ -89,10 +96,12 @@ async function runSelfCheck() {
     );
     await execFileAsync('node', [path.join(scriptDir, 'create-harness.mjs'), '--target', dir]);
     const scored = scoreHarness(await loadHarnessFiles(dir));
+    const validation = await validateHarnessTarget(dir);
     return {
-      pass: scored.overall >= Number(args.minSelfCheckScore || 90),
+      pass: scored.overall >= Number(args.minSelfCheckScore || 90) && validation.hardFailures.length === 0,
       score: scored.overall,
-      bottleneck: scored.bottleneck
+      bottleneck: scored.bottleneck,
+      hardFailures: validation.hardFailures
     };
   } catch (error) {
     return { pass: false, score: 0, error: error.message };
@@ -126,6 +135,9 @@ function scoreEvals(evalsJson) {
 }
 
 function recommend(harnessResult, evalResult) {
+  if (harnessResult.validation?.hardFailures?.length) {
+    return 'Invalid harness state/file gates; the score is informational until all hard failures are fixed.';
+  }
   if (harnessResult.overall >= 85 && evalResult.score >= 90) {
     return 'Ready for realistic before/after agent-session benchmarking.';
   }
