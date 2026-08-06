@@ -75,6 +75,12 @@ Every useful coding-agent harness has five subsystems:
 npx skills add tungxuan1656/harness-slim --skill harness-slim
 ```
 
+or
+
+```bass
+npx skills add tungxuan1656/harness-slim
+```
+
 ### Clone for all bundled skills
 
 To get `harness-slim` plus the 10 companion skills in one go, clone the repo and copy the `skills/` folder:
