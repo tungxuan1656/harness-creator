@@ -1,0 +1,29 @@
+name: Hybrid skill preflight
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/hybrid-skills.yml"
+      - "docs/**"
+      - "scripts/**"
+      - "skills/harness-*/**"
+  push:
+    paths:
+      - ".github/workflows/hybrid-skills.yml"
+      - "docs/**"
+      - "scripts/**"
+      - "skills/harness-*/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/validate-hybrid-skills.mjs

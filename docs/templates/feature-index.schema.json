@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Harness Feature Index",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "features"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "features": {
+      "description": "Feature records. Array order does not imply priority, rank, or execution order.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "status",
+          "depends_on",
+          "detail"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^feat-[A-Za-z0-9][A-Za-z0-9._-]*$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "todo",
+              "in_progress",
+              "blocked",
+              "done"
+            ]
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^feat-[A-Za-z0-9][A-Za-z0-9._-]*$"
+            },
+            "uniqueItems": true
+          },
+          "detail": {
+            "type": "string",
+            "pattern": "^(?!.*\\.\\./)features/[A-Za-z0-9._/-]+\\.md$"
+          },
+          "specs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+\\.md$"
+            },
+            "uniqueItems": true
+          },
+          "external_ref": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

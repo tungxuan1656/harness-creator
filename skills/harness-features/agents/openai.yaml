@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness Features"
+  short_description: "Build persistent repository feature state"
+  default_prompt: "Use $harness-features to turn this planned work into a persistent repository backlog with verifiable acceptance."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness Garden"
+  short_description: "Audit and repair repository harness drift"
+  default_prompt: "Use $harness-garden to audit and repair scoped repository harness drift with evidence."

@@ -1,0 +1,58 @@
+{
+  "skill_name": "harness-verify",
+  "evals": [
+    {
+      "id": 1,
+      "name": "Trigger - Build a thin affected adapter",
+      "prompt": "This two-package repository has real npm checks but no stable agent-facing command. Add quick, affected, and full feedback; local affected must include staged, unstaged, and untracked files.",
+      "expected_output": "A thin adapter delegating to native commands with explicit change discovery, conservative mapping, and compact truthful results.",
+      "files": ["evals/fixtures/affected-repo.md"],
+      "tags": ["trigger-positive", "workflow"],
+      "expectations": [
+        "Delegates instead of copying native lint, type, test, and build definitions",
+        "Includes staged, unstaged, and untracked local paths",
+        "Widening covers shared configuration and known reverse dependents",
+        "Invalid modes and required command failures remain nonzero"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Workflow - Native graph, path escape, and unknown fallback",
+      "prompt": "Expose the monorepo's native affected command. Explicit scopes may be passed from nested directories; reject paths outside the repository and widen unknown or deleted paths safely.",
+      "expected_output": "Native affected delegation with normalized in-repository scopes, repository-escape rejection, rename/delete handling, and a broader fallback.",
+      "files": ["evals/fixtures/affected-repo.md"],
+      "tags": ["trigger-positive", "workflow", "dirty-worktree"],
+      "expectations": [
+        "Resolves explicit paths from the documented caller directory",
+        "Rejects repository escapes before mapping or dispatch",
+        "Preserves deleted paths and maps both sides of renames when relevant",
+        "Leaves unrelated dirty files untouched and never uses eval on path data"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Rerun - Preserve a sufficient native interface",
+      "prompt": "Run harness-verify again after no native command, CI, topology, or safety change. The existing Make targets already expose all three modes.",
+      "expected_output": "An evidence-backed no-op with no wrapper or semantic diff.",
+      "files": [],
+      "tags": ["trigger-positive", "rerun"],
+      "expectations": [
+        "Reuses the stable native interface",
+        "Does not add init.sh or one-command helper files",
+        "Does not run full mechanically or claim unrun checks passed"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "No trigger - Run an already clear targeted test",
+      "prompt": "Run the documented unit test for src/parser.ts after my focused fix; verification design is already clear.",
+      "expected_output": "harness-verify should not trigger merely to execute an existing check.",
+      "files": [],
+      "tags": ["trigger-negative"],
+      "expectations": [
+        "Creates or redesigns no verification artifact",
+        "Does not broaden the request into CI or garden work"
+      ]
+    }
+  ]
+}

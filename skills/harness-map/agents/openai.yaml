@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness Map"
+  short_description: "Map repositories for coding agents"
+  default_prompt: "Use $harness-map to map this repository’s entry points, boundaries, and documentation routes."
