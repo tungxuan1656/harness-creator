@@ -1,35 +1,50 @@
 # <Subsystem>
 
 ## Purpose
-<What this subsystem owns>
+
+<What this subsystem owns.>
+
+## Status
+
+<!-- Label important content as observed, intended, proposed, or uncertain when needed. -->
 
 ## Stack
+
 - ...
 
 ## Code map
+
 | Path/module | Role |
 |---|---|
 | ... | ... |
 
 ## Main flow
+
 ```text
-A → B → C
+A -> B -> C
 ```
 
 ## Patterns
+
 ### <Pattern>
+
 Use when:
+
 - ...
 
-Example location:
+Observed example:
+
+- `<stable symbol/path>`
+
+## Rules and boundaries
+
 - ...
 
-## Rules / invariants
-- ...
+## Known exceptions or uncertainties
 
-## Avoid
 - ...
 
 ## Testing
-- Targeted:
-- Broader:
+
+- Targeted: `<command>`
+- Broader: `<command>`

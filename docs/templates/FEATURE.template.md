@@ -1,34 +1,48 @@
-# feat-<id> — <Title>
+# feat-<id> - <Title>
 
 ## Goal
-...
+
+<One coherent user or system outcome.>
 
 ## Scope
+
 - ...
 
 ## Non-goals
+
+<!-- Remove when scope is already unambiguous. -->
+
 - ...
 
 ## Acceptance
-- [ ] ...
+
+- [ ] <Observable or verifiable outcome>
 
 ## Relevant docs
-- `docs/specs/...`
-- `docs/BACKEND.md`
+
+- `<spec or focused subsystem doc>`
 
 ## Verification
+
+- `<targeted command>`
 - `./init.sh affected`
-- ...
 
 ## Handoff
+
+<!-- Include only when stopping before completion. Remove stale Handoff when done. -->
+
 Done:
+
 - ...
 
 Remaining:
+
 - ...
 
 Blocker:
+
 - none
 
 Next:
+
 - ...

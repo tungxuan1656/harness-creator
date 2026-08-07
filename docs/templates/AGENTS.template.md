@@ -1,35 +1,48 @@
 # AGENTS.md
 
 ## Project
-<2–4 câu: sản phẩm là gì, main topology>
+
+<What the product does and its main topology, 2-4 sentences.>
 
 ## Start here
-- Architecture: `ARCHITECTURE.md`
-- Documentation map: `docs/README.md`
-- Feature state: `feature_index.json` (if present)
-- Verification: `./init.sh affected` (adapt to repo)
+
+- Architecture: `<existing architecture doc>`
+- Documentation map: `<docs index, if useful>`
+- Feature state: `<feature_index.json, only if enabled>`
+- Verification: `./init.sh affected` or `<existing canonical command>`
+
+## Task routing
+
+| Change | Read first |
+|---|---|
+| `<task/component>` | `<focused doc or code area>` |
 
 ## Repository map
-| Area | Read when |
+
+| Area | Responsibility |
 |---|---|
-| `docs/BACKEND.md` | Backend/API/data changes |
-| `docs/FRONTEND.md` | UI/client state changes |
-| `docs/specs/` | Product/domain behavior |
+| `<path/module>` | `<role>` |
 
 ## Working invariants
-- Follow existing architectural boundaries.
-- Make the smallest coherent in-scope change.
-- Do not invent project rules when evidence is missing.
-- Verify proportionally; use affected checks by default when available.
-- Update durable docs only when behavior/boundary/pattern actually changed.
+
+- Follow the repository's established boundaries and scoped instructions.
+- Make the smallest coherent change that satisfies the request.
+- Distinguish observed code patterns from intended rules.
+- Do not invent project behavior when evidence is missing.
+- Verify proportionally; use targeted or affected checks by default.
+- Update durable docs only when behavior, boundaries, patterns, or commands change.
 
 ## Feature work
+
+<!-- Remove this section when persistent feature state is not enabled. -->
+
 - Read the relevant feature detail and linked specs.
-- One agent/session focuses on one primary feature.
-- Mark done only after acceptance + relevant verification.
+- Focus on one primary task per session; other features may remain in progress.
+- Mark done only after acceptance and relevant verification.
+- Leave a concise Handoff only when stopping before completion.
 
 ## Verification
+
 - Quick: `<command>`
 - Affected: `<command>`
 - Full: `<command>`
-- Doctor: `<command>`
