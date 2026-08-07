@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness Specs"
+  short_description: "Ground durable behavior in canonical specs"
+  default_prompt: "Use $harness-specs to create or repair canonical product behavior specifications from repository evidence."
