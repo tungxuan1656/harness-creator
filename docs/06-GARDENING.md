@@ -2,61 +2,61 @@
 
 ## 1. Purpose
 
-Garden là workflow maintenance duy nhất của `harness`. Nó dọn entropy trong:
+Garden is the single maintenance workflow of `harness`. It removes entropy from:
 
-- agent instructions và knowledge docs;
-- specs và feature state;
-- verification adapters/config;
-- recurring code patterns có khả năng bị agent sao chép.
+- agent instructions and knowledge docs;
+- specs and feature state;
+- verification adapters/configuration;
+- recurring code patterns likely to be copied by agents.
 
-Current interface dùng garden thay cho một public maintenance mode riêng trong verification.
+The current interface uses garden instead of a separate public maintenance mode in verification.
 
 ## 2. One workflow, two engines
 
-Garden giữ distinction kỹ thuật nhưng không bắt người dùng chọn hai hệ thống:
+Garden keeps a technical distinction without forcing users to understand two systems.
 
 ### Structural engine
 
-Cheap, deterministic và có thể script hóa:
+Cheap and deterministic checks:
 
 - invalid feature schema;
-- duplicate IDs, missing dependencies, cycles;
+- duplicate IDs, missing dependencies, or cycles;
 - missing/orphan detail files;
-- broken internal links và stale paths;
-- missing referenced verify helpers;
+- broken internal links and stale paths;
+- missing referenced verification helpers;
 - obvious duplicate routing entries;
-- completed state còn stale Handoff/blocker.
+- completed state with stale Handoff/blocker.
 
 ### Reasoning engine
 
-Agent audit theo evidence:
+Evidence-based agent audit:
 
-- architecture/spec nói A nhưng representative code/test cho thấy B;
-- intended dependency direction bị phá;
-- flow docs stale sau migration;
-- deprecated/bypass/duplicated pattern đang lặp lại;
-- obsolete shim, flag hoặc API usage có evidence đủ mạnh.
+- architecture/spec says A while representative code/tests show B;
+- intended dependency direction is violated;
+- flow docs are stale after a migration;
+- deprecated, bypassed, or duplicated patterns recur;
+- an obsolete shim, flag, or API usage has strong evidence of being unused.
 
-Structural result có thể deterministic. Semantic result phải phân biệt proven conflict với suspicion.
+Structural results can be deterministic. Semantic results must distinguish proven conflict from suspicion.
 
-**Structural invariant** là deterministic và MAY gate completion/CI. **Semantic finding** cần evidence + confidence và normally MUST NOT gate delivery tự động.
+**A structural invariant** is deterministic and MAY gate completion/CI. **A semantic finding** requires evidence and confidence and normally MUST NOT gate delivery automatically.
 
 ## 3. Triggers
 
-Chạy garden khi:
+Run garden when:
 
-- user yêu cầu audit/cleanup/dọn repo;
-- stale link/doc/state đã thấy;
-- migration/refactor lớn vừa hoàn thành;
-- nhiều feature done cần compact;
-- cùng review comment hoặc bad pattern lặp lại;
-- trước milestone nếu repository có maintenance debt thực.
+- the user asks for an audit, cleanup, or repository hygiene;
+- stale links/docs/state are already visible;
+- a large migration/refactor has just finished;
+- several completed features need compaction;
+- the same review comment or bad pattern keeps recurring;
+- a milestone warrants real maintenance work.
 
-Không chạy full semantic garden mặc định trong mọi bootstrap hoặc task.
+Do not run a full semantic garden by default during every bootstrap or task.
 
 ## 4. Scope selection
 
-Garden MUST chọn scope nhỏ nhất có ích:
+Garden MUST choose the smallest useful scope:
 
 ```text
 structural-only
@@ -68,21 +68,21 @@ recent changes
 repository-wide only when explicitly justified
 ```
 
-Semantic audit nên sample representative modules, recent changes, code paths referenced by docs và known hotspots trước khi mở rộng.
+Semantic audits should sample representative modules, recent changes, code paths referenced by docs, and known hotspots before expanding.
 
 ## 5. Audit and cleanup semantics
 
-User intent quyết định mutation level:
+User intent determines mutation level:
 
-- **audit/check/review** -> report findings, không sửa rộng;
-- **cleanup/fix/dọn** -> sửa high-confidence mechanical issues và targeted issues trong stated scope;
-- semantic refactor hoặc behavior change -> cần evidence và explicit scope; report ambiguity trước khi chọn truth.
+- **audit/check/review** -> report findings; do not make broad changes;
+- **cleanup/fix** -> repair high-confidence mechanical issues and targeted issues within the stated scope;
+- semantic refactor or behavior change -> require evidence and explicit scope; report ambiguity before choosing a source of truth.
 
-Một cleanup invocation MAY audit rồi repair trong cùng turn. Không bắt user chạy ceremony hai bước cho broken links hoặc stale state hiển nhiên.
+A cleanup invocation MAY audit and repair in one turn. Do not force a two-step ceremony for obvious broken links or stale state.
 
 ## 6. Finding format
 
-Chỉ dùng fields tạo giá trị:
+Use only fields that add value:
 
 ```text
 Severity
@@ -93,53 +93,53 @@ Classification or confidence
 Action
 ```
 
-IDs chỉ cần khi có nhiều findings, persistent report hoặc user sẽ chọn subset để repair.
+IDs are needed only when there are many findings, a persistent report, or user-selected repairs.
 
-Garden tối ưu precision. Một finding không có evidence phải được label suspicion hoặc bỏ.
+Optimize for precision. A finding without evidence must be labeled suspicion or omitted.
 
 ## 7. Repair policy
 
-Garden MAY sửa trực tiếp khi user yêu cầu cleanup và issue có confidence cao:
+Garden MAY repair directly when the user requests cleanup and confidence is high:
 
 - broken links/path renames;
 - invalid or stale feature state;
-- obsolete empty/duplicate doc section có canonical home rõ;
-- dead generated helper không còn referenced;
-- completed feature artifacts theo retention policy.
+- obsolete empty/duplicate doc sections with a clear canonical home;
+- dead generated helpers with no remaining references;
+- completed feature artifacts according to the retention policy.
 
-Garden MUST NOT tự động:
+Garden MUST NOT automatically:
 
-- đổi product behavior để match stale docs;
-- rewrite architecture rộng dựa trên dominant pattern chưa được chấp nhận;
-- refactor toàn repo vì smell;
-- xóa compatibility code khi chưa chứng minh consumer không còn;
-- sửa unrelated test/build failures.
+- change product behavior to match stale docs;
+- broadly rewrite architecture based on an unaccepted dominant pattern;
+- refactor the whole repository because of a smell;
+- remove compatibility code without proving that consumers are gone;
+- fix unrelated test/build failures.
 
-Sau repair, chạy verification phù hợp với files/behavior đã đổi.
+After repair, run verification appropriate to the changed files/behavior.
 
 ## 8. Structural tooling
 
-Khi target repository bật feature state hoặc có nhiều agent-facing docs/links, garden SHOULD cung cấp một deterministic structural entry point, ví dụ:
+When the target repository enables feature state or has many agent-facing docs/links, garden SHOULD provide a deterministic structural entry point, for example:
 
 ```text
 scripts/garden/check.*
 ```
 
-MAY omit helper nếu repo không có machine-checkable harness state hoặc native tooling đã cover cùng invariants.
+The helper MAY be omitted when the repository has no machine-checkable harness state or native tooling already covers the same invariants.
 
-Script phải:
+The script must be:
 
 - deterministic;
-- runnable bằng runtime repo có;
-- output compact;
-- nonzero khi required invariant fail;
-- không pretend validate semantic correctness.
+- runnable with an available repository runtime;
+- compact in output;
+- nonzero when a required invariant fails;
+- explicit that it does not validate semantic correctness.
 
-Garden vẫn owns invariant/check. Verify compose nó vào feature completion, affected harness changes và full verification theo contract trong `05-VERIFICATION.md`.
+Garden owns the invariant/check. Verify composes it into feature completion, affected harness changes, and full verification according to [05-VERIFICATION.md](05-VERIFICATION.md).
 
 ## 9. Promotion ladder
 
-Khi issue lặp lại:
+When an issue recurs:
 
 ```text
 one-off finding
@@ -148,33 +148,33 @@ one-off finding
   -> high-value required verification gate
 ```
 
-Không promote style preference hoặc low-confidence heuristic thành gate.
+Do not promote style preferences or low-confidence heuristics into gates.
 
 ## 10. Feature and doc garbage collection
 
-Garden SHOULD xem xét:
+Garden SHOULD consider:
 
-- remove stale Handoff/blocker;
-- compact/remove low-value completed detail trước;
-- retain compact `done` index identity để tránh duplicate planning;
-- prune old identity chỉ khi retention policy cho phép và reliable history tồn tại;
-- delete empty placeholder docs;
-- merge duplicate facts về canonical home;
-- remove stale routing rows;
-- preserve git/external tracker as history thay vì tạo archive mặc định.
+- removing stale Handoff/blocker;
+- compacting or removing low-value completed detail first;
+- retaining compact `done` index identity to prevent duplicate planning;
+- pruning old identity only when the retention policy allows and reliable history exists;
+- deleting empty placeholder docs;
+- merging duplicate facts into their canonical home;
+- removing stale routing rows;
+- preserving git/external tracker history instead of creating an archive by default.
 
-Deletion phải kiểm tra references và human-authored durable value.
+Deletion must check references and human-authored durable value.
 
 ## 11. Output persistence
 
-Default output nằm trong response/session. Chỉ persist report khi:
+By default, output stays in the response/session. Persist a report only when:
 
-- cleanup kéo dài qua nhiều phiên;
-- findings cần human review riêng;
-- milestone cần tracked remediation.
+- cleanup spans multiple sessions;
+- findings need separate human review;
+- a milestone needs tracked remediation.
 
-Không tạo permanent garbage catalog mặc định.
+Do not create a permanent garbage catalog by default.
 
 ## 12. Completion
 
-Garden hoàn tất khi scoped high-confidence issues đã được report hoặc repaired, checks phù hợp đã chạy, và repo ít ambiguous hơn. Số finding hoặc số file thay đổi không phải success metric.
+Garden is complete when scoped high-confidence issues have been reported or repaired, appropriate checks have run, and the repository is less ambiguous. Finding count and file count are not success metrics.

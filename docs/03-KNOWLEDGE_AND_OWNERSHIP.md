@@ -4,114 +4,114 @@
 
 ### Near-always
 
-- root instruction file loaded by the target agent.
+- the root instruction file loaded by the target agent.
 
 ### By task classification
 
-- architecture overview khi agent chưa biết topology hoặc task cross-cutting;
-- một subsystem guide liên quan;
-- feature detail nếu task thuộc persistent feature;
-- spec nếu behavior/domain rule ảnh hưởng implementation.
+- architecture overview when topology is unfamiliar or the task is cross-cutting;
+- one relevant subsystem guide;
+- feature detail when the task belongs to a persistent feature;
+- a spec when domain behavior affects implementation.
 
 ### On demand
 
-- decisions, external references, generated schema;
+- decisions, external references, generated schemas;
 - garden findings;
 - historical feature details.
 
-Một doc không nên bắt agent mở nhiều doc chỉ để hiểu một invariant cơ bản.
+A doc should not force an agent to open several other docs just to understand one basic invariant.
 
 ## 2. Router contract
 
-Instruction entry point SHOULD trả lời trong một lần scan:
+The instruction entry point SHOULD answer these questions in one scan:
 
-1. Project làm gì và topology chính là gì?
-2. Task loại X cần đọc doc nào?
-3. Code area/entry point chính ở đâu?
-4. Universal invariants nào áp dụng cho mọi task?
-5. Verify bằng command nào?
-6. Feature state nằm đâu nếu repo dùng nó?
+1. What does the project do, and what is its main topology?
+2. Which docs should be read for task type X?
+3. Where are the main code areas and entry points?
+4. Which universal invariants apply to every task?
+5. Which command verifies a change?
+6. Where is feature state, if the repository uses it?
 
-Không nhúng framework tutorial, full architecture hoặc lịch sử feature.
+Do not embed framework tutorials, the full architecture, or feature history.
 
 ## 3. Architecture map
 
-Một architecture overview tốt chứa:
+A useful architecture overview contains:
 
-- bird's-eye flow;
+- a bird's-eye flow;
 - application entry points;
-- coarse code map;
-- dependency direction và boundaries;
+- a coarse code map;
+- dependency direction and boundaries;
 - important cross-cutting concerns;
 - explicit invariants;
-- route tới docs sâu hơn.
+- routes to deeper docs.
 
-Nó không liệt kê mọi folder/function, không dùng line numbers và không copy subsystem docs.
+It does not list every folder/function, use line numbers, or copy subsystem guides.
 
 ## 4. Subsystem docs
 
-Chỉ tạo khi subsystem có ít nhất một đặc điểm:
+Create a subsystem guide only when at least one is true:
 
-- stack hoặc conventions riêng;
-- flow xuyên nhiều folder khó tìm;
-- agent thường đặt logic sai layer;
-- boundary không thể suy ra an toàn;
-- đủ lớn để overview không nên chứa chi tiết.
+- it has a distinct stack or convention;
+- a flow spans several folders and is hard to locate;
+- agents often place logic in the wrong layer;
+- a boundary cannot be safely inferred;
+- the subsystem is large enough that the overview should stay coarse.
 
-Nội dung ưu tiên actual symbols/paths, flow, rules, examples và test locations.
+Prefer real symbols/paths, flows, rules, examples, and test locations.
 
 ## 5. Product/domain specs
 
-Tạo spec cho:
+Create specs for:
 
-- core workflow;
-- permissions hoặc state transitions;
+- core workflows;
+- permissions or state transitions;
 - business invariants;
 - public contracts;
 - cross-layer behavior;
-- edge cases dễ đoán sai.
+- edge cases that are easy to misread.
 
-Không tạo spec cho CRUD hiển nhiên hoặc framework plumbing.
+Do not create specs for obvious CRUD or framework plumbing.
 
-Spec SHOULD có:
+A spec SHOULD contain:
 
 ```text
 Goal
 Flow
 Rules
-State transitions nếu có
+State transitions when applicable
 Edge cases
-Interfaces nếu public contract cần
-Non-goals nếu scope dễ trượt
+Interfaces when a public contract needs them
+Non-goals when scope can drift
 Sources / uncertainties
 ```
 
-`Sources / uncertainties` ghi ngắn gọn behavior đến từ requirement, existing canonical doc, test/evidence hay inference cần xác nhận.
+`Sources / uncertainties` briefly records whether behavior comes from a requirement, existing canonical doc, test/evidence, or an inference requiring confirmation.
 
 ## 6. Truth ownership
 
-`Owner` trong hệ thống này nghĩa là **primary steward**, không phải exclusive writer.
+`Owner` means **primary steward**, not exclusive writer.
 
-| Truth | Primary steward | Ai có thể cập nhật |
+| Truth | Primary steward | Who may update it |
 |---|---|---|
-| Instruction routing | Harness/map workflow | Coding agent khi canonical route thay đổi trong scope |
-| Architecture intent | Architecture doc | Agent thực hiện accepted boundary change; garden sửa stale facts khi authorized |
-| Product behavior | Specs | Agent thực hiện accepted behavior change; garden sửa proven stale facts khi authorized |
-| Feature state/scope | Feature artifacts | Agent đang làm feature hoặc features workflow |
-| Verification interface | Verify workflow | Agent thực hiện tooling change trong scope |
-| Observed implementation | Code/tests | Coding workflow theo user task |
+| Instruction routing | Harness/map workflow | A coding agent when the canonical route changes in scope |
+| Architecture intent | Architecture docs | An agent making an accepted boundary change; garden may repair stale facts when authorized |
+| Product behavior | Specs | An agent making an accepted behavior change; garden may repair proven stale facts when authorized |
+| Feature state/scope | Feature artifacts | The feature agent or features workflow |
+| Verification interface | Verify workflow | An agent making an in-scope tooling change |
+| Observed implementation | Code/tests | The coding workflow for the user task |
 
-Skill ownership chỉ kiểm soát generation/rerun behavior. Nó MUST NOT ngăn một feature cập nhật canonical docs mà feature đó làm thay đổi.
+Skill ownership controls generation and rerun behavior. It MUST NOT prevent a feature from updating a canonical doc that the feature changes.
 
 ## 7. One fact, one canonical home
 
-Doc khác MAY:
+Other docs MAY:
 
 - link;
-- restate một câu để route;
-- summarize invariant mà mọi task thực sự cần.
+- restate one sentence for routing;
+- summarize an invariant every relevant task must see.
 
-Không copy nguyên section. Architecture, specs và feature state là peer truth branches, không phải một chuỗi derivation:
+Do not copy whole sections. Architecture, specs, and feature state are peer truth branches, not one derivation chain:
 
 ```text
                     AGENTS.md
@@ -129,47 +129,47 @@ Không copy nguyên section. Architecture, specs và feature state là peer trut
                   Code + tests
 ```
 
-Feature detail chủ yếu route tới relevant spec, architecture/subsystem docs, acceptance và verification. Product behavior không nằm “dưới” architecture.
+Feature detail primarily routes to relevant specs, architecture/subsystem docs, acceptance, and verification. Product behavior is not derived from architecture.
 
 ## 8. Mutation and rerun protocol
 
-Trước khi sửa artifact, skill MUST:
+Before changing an artifact, the skill MUST:
 
-1. đọc existing content và git state;
-2. xác định canonical owner của fact;
-3. phân loại content: correct, stale, missing, conflicting hoặc uncertain;
-4. patch theo stable headings hoặc cấu trúc hiện có;
-5. giữ human-authored decisions chưa bị chứng minh sai;
-6. report conflict thay vì overwrite khi intent không rõ.
+1. read existing content and git state;
+2. identify the canonical owner of the fact;
+3. classify content as correct, stale, missing, conflicting, or uncertain;
+4. patch stable headings or the existing structure;
+5. preserve human-authored decisions not proven wrong;
+6. report a conflict instead of overwriting when intent is unclear.
 
-Managed markers chỉ MAY dùng cho section hoàn toàn generated. Không bao quanh human-maintained content mặc định.
+Managed markers MAY be used for fully generated sections. Do not wrap human-maintained content by default.
 
 ## 9. Writing standard
 
-Ưu tiên:
+Prefer:
 
-- map/rule trước prose;
-- `A -> B -> C` cho flows;
-- table cho mapping/state;
-- một invariant mỗi bullet;
-- stable symbols và paths;
-- observed/intended/proposed labels khi cần.
+- maps/rules before prose;
+- `A -> B -> C` for flows;
+- tables for mappings/state;
+- one invariant per bullet;
+- stable symbols and paths;
+- observed/intended/proposed labels when useful.
 
-Loại bỏ:
+Remove:
 
-- lịch sử không ảnh hưởng quyết định;
-- tutorial agent đã biết;
-- prose lặp code;
-- generic best practices không grounded trong repo;
-- `Last updated` thủ công như proxy cho correctness.
+- history that does not affect decisions;
+- tutorials the agent already knows;
+- prose that repeats code;
+- generic best practices not grounded in the repository;
+- manually maintained `Last updated` dates as a proxy for correctness.
 
 ## 10. Docs index
 
-Tạo `docs/README.md` khi có nhiều doc cần routing. Mỗi row chủ yếu trả lời `Read when`, không viết summary dài.
+Create `docs/README.md` when several docs need routing. Each row should mainly answer `Read when`, not provide a long summary.
 
 ```markdown
 | Document | Read when |
 |---|---|
-| `BACKEND.md` | Changing API, service or persistence code |
+| `BACKEND.md` | Changing API, service, or persistence code |
 | `specs/auth.md` | Changing authentication behavior |
 ```

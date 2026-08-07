@@ -2,7 +2,7 @@
 
 ## Project
 
-<What the product does and its main topology, 2-4 sentences.>
+<What the product does and its main topology, in 2-4 sentences.>
 
 ## Start here
 

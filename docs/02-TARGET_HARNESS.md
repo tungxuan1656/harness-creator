@@ -2,23 +2,23 @@
 
 ## 1. Capability model
 
-Target repository có năm capability, không phải năm bộ quy trình bắt buộc:
+The target repository has five capabilities, not five mandatory processes:
 
 ```text
 NAVIGATE -> UNDERSTAND -> FOCUS -> VERIFY -> MAINTAIN
 ```
 
-| Capability | Câu hỏi |
+| Capability | Question |
 |---|---|
-| Navigate | Tôi nên đọc gì và sửa ở đâu? |
-| Understand | Boundaries, behavior và conventions nào quan trọng? |
-| Focus | Task hiện tại gồm gì và xong khi nào? |
-| Verify | Evidence nào đủ cho thay đổi này? |
-| Maintain | Docs, state và patterns có đang drift không? |
+| Navigate | What should I read, and where should I edit? |
+| Understand | Which boundaries, behaviors, and conventions matter? |
+| Focus | What is the current task, and what counts as done? |
+| Verify | What evidence is sufficient for this change? |
+| Maintain | Are docs, state, and patterns drifting? |
 
 ## 2. Adaptive artifact set
 
-Một repo trung bình thường có instruction entry point và architecture overview; verification adapter chỉ xuất hiện khi native interface chưa đủ rõ:
+A typical medium repository has an instruction entry point and an architecture overview; a verification adapter appears only when native commands are not clear enough:
 
 ```text
 repo/
@@ -29,95 +29,95 @@ repo/
 └── init.sh                 # conditional adapter
 ```
 
-Chỉ thêm khi có nhu cầu:
+Add these only when needed:
 
 ```text
-docs/<SUBSYSTEM>.md         # subsystem phức tạp hoặc conventions riêng
-docs/specs/*                # domain/product behavior
+docs/<SUBSYSTEM>.md         # subsystem complexity or distinct conventions
+docs/specs/*                # product/domain behavior
 feature_index.json          # planned backlog or persistent work
-features/*                  # scope, acceptance, handoff
+features/*                  # scope, acceptance, and handoff
 scripts/garden/*            # recurring deterministic maintenance checks
 scripts/verify/*            # complex verification orchestration
 ```
 
-Không có target tree duy nhất cho mọi repo.
+There is no universal target tree.
 
 ## 3. Minimal profiles
 
-### Small or already well-structured repo
+### Small or already well-structured repository
 
 ```text
 AGENTS.md
-existing docs/build commands
+existing docs and build commands
 ```
 
-Không tạo wrapper hoặc docs mới nếu existing interface đã rõ và agent dùng được.
+Do not create wrappers or docs when an existing interface is clear and agent-friendly.
 
-### Typical medium repo
+### Typical medium repository
 
 ```text
 AGENTS.md
-ARCHITECTURE.md hoặc existing equivalent
-docs/README.md nếu có nhiều doc
-init.sh hoặc existing stable verify command
+ARCHITECTURE.md or an existing equivalent
+docs/README.md when several docs need routing
+init.sh or an existing stable verification command
 ```
 
-`AGENTS.md` hoặc equivalent là required capability. Architecture overview SHOULD tồn tại cho target medium repo, trừ khi repo trivial hoặc existing docs đã làm đúng chức năng đó.
+`AGENTS.md` or an equivalent is a required capability. An architecture overview SHOULD exist for the medium-repository target unless the repository is trivial or existing docs already serve that purpose.
 
 ### Domain-heavy or multi-session work
 
-Thêm focused specs và feature state. Không bật cho mọi task.
+Add focused specs and feature state. Do not enable them for every task.
 
 ## 4. Planes of truth
 
 | Plane | Canonical artifacts | Purpose |
 |---|---|---|
-| Knowledge | instructions, architecture, subsystem docs, specs | System là gì và nên hoạt động thế nào |
-| Execution | feature index/detail, handoff | Đang xây gì và còn gì |
-| Feedback | tests, native build tools, `init.sh`, CI | Thay đổi có hợp lệ không |
-| Maintenance | garden checks/findings | Truth và implementation có drift không |
+| Knowledge | instructions, architecture, subsystem docs, specs | What the system is and how it should behave |
+| Execution | feature index/detail, handoff | What is being built and what remains |
+| Feedback | tests, native build tools, `init.sh`, CI | Whether a change is valid |
+| Maintenance | garden checks/findings | Whether truth and implementation are drifting |
 
-Không gom mọi loại truth vào một manifest lớn.
+Do not put every kind of truth into one large manifest.
 
 ## 5. Agent instruction entry point
 
-Skill MUST inspect instruction mechanisms repo đang dùng:
+The skill MUST inspect instruction mechanisms already used by the repository:
 
-- `AGENTS.md`, kể cả nested files;
+- `AGENTS.md`, including nested files;
 - `CLAUDE.md`;
 - `.github/copilot-instructions.md`;
-- Cursor hoặc tool-specific rules;
+- Cursor or other tool-specific rules;
 - existing contributor instructions.
 
-Prefer một canonical rule home. Tool-specific file SHOULD route tới canonical content thay vì copy toàn bộ rules. Không rewrite nested instruction files ngoài scope.
+Prefer one canonical rule home. A tool-specific file SHOULD route to canonical content instead of copying every rule. Do not rewrite nested instruction files outside scope.
 
 ## 6. Existing artifacts win
 
-Tên file trong corpus là defaults, không phải lý do để duplicate:
+Names in this corpus are defaults, not reasons to duplicate:
 
-- existing architecture doc tốt có thể thay `ARCHITECTURE.md`;
-- existing `make check` có thể thay phần lớn `init.sh`;
-- existing issue tracker có thể thay feature index cho task ngắn;
-- existing product specs phải được reuse và routed.
+- a good existing architecture doc can replace `ARCHITECTURE.md`;
+- an existing `make check` can replace most of `init.sh`;
+- an existing issue tracker can replace the feature index for short tasks;
+- existing product specs must be reused and routed.
 
-Skill tạo capability còn thiếu, không tạo parallel ecosystem.
+Create missing capabilities, not a parallel ecosystem.
 
-## 7. Greenfield vs existing repo
+## 7. Greenfield versus existing repository
 
 ### Empty or near-empty greenfield
 
-Không thể viết observed architecture từ code chưa tồn tại.
+Observed architecture cannot be written from code that does not exist yet.
 
 ```text
 requirements
-  -> product/domain specs khi cần
-  -> proposed architecture với assumptions rõ
+  -> product/domain specs when needed
+  -> proposed architecture with explicit assumptions
   -> initial feature slices
   -> code scaffold
-  -> verification adapter khi real commands tồn tại
+  -> verification adapter when real commands exist
 ```
 
-### Existing repo
+### Existing repository
 
 ```text
 inspect existing truth
@@ -127,29 +127,29 @@ inspect existing truth
   -> track only planned/current work
 ```
 
-MUST NOT reverse-engineer toàn bộ existing functionality thành backlog.
+MUST NOT reverse-engineer all existing functionality into a backlog.
 
-## 8. Proposed vs observed documentation
+## 8. Proposed versus observed documentation
 
-Architecture/spec content phải phân biệt khi cần:
+Architecture/spec content should distinguish when relevant:
 
-- **Observed** - có evidence trong code/test/runtime.
-- **Intended** - có source từ user requirement, accepted decision hoặc canonical spec.
-- **Proposed** - chưa được implementation chứng minh.
-- **Uncertain** - cần quyết định hoặc evidence thêm.
+- **Observed** - supported by code, tests, or runtime evidence.
+- **Intended** - sourced from a user requirement, accepted decision, or canonical spec.
+- **Proposed** - not yet proven by implementation.
+- **Uncertain** - requires a decision or more evidence.
 
-Không biến dominant code pattern thành mandatory rule nếu chưa có evidence đó là intended pattern.
+Do not turn a dominant code pattern into a mandatory rule without evidence that it is intended.
 
 ## 9. Stable lifecycle
 
-Harness thay đổi incrementally:
+Harness changes incrementally:
 
 ```text
 inspect existing
-  -> preserve correct
+  -> preserve correct content
   -> update stale facts in scope
   -> add missing capability
   -> remove obsolete artifact when safe
 ```
 
-Rerun MUST NOT reset IDs, rewrite unrelated prose hoặc overwrite human decisions để tạo output đồng đều.
+Rerun MUST NOT reset IDs, rewrite unrelated prose, or overwrite human decisions just to make output uniform.

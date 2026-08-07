@@ -1,43 +1,43 @@
 # Harness Design Corpus
 
-## Mục đích
+## Purpose
 
-Bộ tài liệu này là nguồn thiết kế chuẩn để xây dựng **họ skill `harness-*` với một entry point `harness`**. Các skill giúp AI coding agent thiết lập hoặc cải thiện bộ khung làm việc trong nhiều repository khác nhau.
+This corpus is the design source of truth for the `harness-*` skill family, with `harness` as the entry point. The skills help AI coding agents establish or improve a working framework across different repositories.
 
-Đối tượng mặc định:
+Default target:
 
-- project khoảng 10k-200k LOC;
-- team 1-4 người;
-- một hoặc vài agent làm việc cùng con người;
-- feature thường hoàn thành trong một hoặc vài phiên;
-- tốc độ delivery và feedback quan trọng hơn governance nặng.
+- projects around 10k-200k LOC;
+- teams of 1-4 people;
+- one or a few agents working with humans;
+- features usually completed in one or a few sessions;
+- delivery speed and feedback matter more than heavy governance.
 
-## Mục tiêu
+## Goal
 
-Harness phải giúp agent:
+Harness should help an agent:
 
 ```text
-Find nhanh
-  -> Understand đủ
-  -> Change đúng scope
-  -> Verify theo risk
-  -> Leave clean state
+Find quickly
+  -> Understand enough
+  -> Change within scope
+  -> Verify at the right risk level
+  -> Leave a clean state
 ```
 
-Task nhỏ lý tưởng chỉ cần:
+An ordinary local task should ideally need only:
 
 ```text
 AGENTS.md
-  -> một doc liên quan nếu cần
-  -> code/test liên quan
-  -> targeted hoặc affected verification
+  -> one relevant doc when needed
+  -> relevant code/tests
+  -> targeted or affected verification
 ```
 
-Không bắt task nhỏ tạo feature file, persistent plan, progress log hoặc chạy full suite nếu chúng không tạo giá trị.
+Do not require a feature file, persistent plan, progress log, or full suite for a small task unless it creates real value.
 
 ## Hybrid skill architecture
 
-Khi platform hỗ trợ cài nhiều skill, dùng router mỏng và các skill chuyên trách:
+When the platform supports multiple installed skills, use a thin router and focused specialists:
 
 ```text
 harness
@@ -48,44 +48,44 @@ harness
 └── harness-garden
 ```
 
-| Skill/phase | Dùng khi | Artifact thường gặp |
+| Skill/phase | Use when | Typical artifacts |
 |---|---|---|
-| `harness` | Adopt/upgrade và chọn phase | Capability audit, ordered execution |
-| `harness-map` | Agent khó tìm code hoặc hiểu boundaries | `AGENTS.md`, architecture/subsystem docs |
-| `harness-specs` | Product/domain behavior khó suy ra an toàn | Canonical repository-local specs |
-| `harness-features` | Project/work cần persistent backlog | `feature_index.json`, `features/*` |
-| `harness-verify` | Chuẩn hóa feedback loop | `init.sh`, `scripts/verify/*` khi cần |
-| `harness-garden` | Dọn stale docs/state/code patterns | Structural scan, semantic audit, targeted repair |
+| `harness` | Adopt/upgrade and choose phases | Capability audit, ordered execution |
+| `harness-map` | Agents cannot find code or understand boundaries | `AGENTS.md`, architecture/subsystem docs |
+| `harness-specs` | Product/domain behavior is unsafe to infer | Canonical repository-local specs |
+| `harness-features` | The project/work needs a persistent backlog | `feature_index.json`, `features/*` |
+| `harness-verify` | A clear feedback loop is missing | `init.sh`, `scripts/verify/*` when needed |
+| `harness-garden` | Stale docs/state/code patterns need cleanup | Structural scan, semantic audit, targeted repair |
 
-Nếu platform không compose được nhiều skill, `harness` dùng cùng workflow references nhưng MUST chạy từng phase độc lập: inspect, produce, validate và close phase trước khi chuyển concern khác.
+If the platform cannot compose multiple skills, `harness` uses the same workflow references but MUST run phases independently: inspect, produce, validate, and close one phase before changing concerns.
 
-## Tài liệu canonical
+## Canonical documents
 
-1. `01-SCOPE_AND_PRINCIPLES.md` - scope, priorities và non-goals.
-2. `02-TARGET_HARNESS.md` - kiến trúc artifact trong target repository.
-3. `03-KNOWLEDGE_AND_OWNERSHIP.md` - progressive disclosure, truth và mutation rules.
-4. `04-WORK_AND_FEATURE_MODEL.md` - task classes, feature state và handoff.
-5. `05-VERIFICATION.md` - `init.sh` adapter và verification contract.
-6. `06-GARDENING.md` - structural, semantic và cleanup workflow.
-7. `07-HARNESS_SKILL_SPEC.md` - hybrid skill architecture và phase contracts.
+1. `01-SCOPE_AND_PRINCIPLES.md` - scope, priorities, and non-goals.
+2. `02-TARGET_HARNESS.md` - target-repository artifact architecture.
+3. `03-KNOWLEDGE_AND_OWNERSHIP.md` - progressive disclosure, truth, and mutation rules.
+4. `04-WORK_AND_FEATURE_MODEL.md` - task classes, feature state, and handoff.
+5. `05-VERIFICATION.md` - `init.sh` adapter and verification contract.
+6. `06-GARDENING.md` - structural, semantic, and cleanup workflow.
+7. `07-HARNESS_SKILL_SPEC.md` - hybrid skill architecture and phase contracts.
 8. `08-WORKFLOWS.md` - end-to-end flows.
-9. `09-EVALS_AND_MIGRATION.md` - quality gates, evals và migration.
-10. `10-DESIGN_DECISIONS.md` - accepted decisions và rationale ngắn.
+9. `09-EVALS_AND_MIGRATION.md` - quality gates, evals, and migration.
+10. `10-DESIGN_DECISIONS.md` - accepted decisions and short rationale.
 
-Templates trong `templates/` là starting points, không phải scaffold bắt buộc.
+Templates in `templates/` are starting points, not a mandatory scaffold.
 
 ## Normative language
 
-- **MUST**: cần để giữ correctness hoặc tránh failure mode lớn.
-- **SHOULD**: mặc định nên làm, có thể bỏ khi repo có evidence hợp lý.
-- **MAY**: tùy chọn.
-- **MUST NOT**: gây drift, false confidence hoặc overhead đáng kể.
+- **MUST**: required for correctness or to avoid a major failure mode.
+- **SHOULD**: the default, but may be skipped with repository evidence.
+- **MAY**: optional.
+- **MUST NOT**: likely to cause drift, false confidence, or significant overhead.
 
-## Nguồn tham khảo
+## References
 
 - OpenAI, Harness engineering: https://openai.com/index/harness-engineering/
 - Anthropic, Effective harnesses for long-running agents: https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents
 - Anthropic, Harness design for long-running application development: https://www.anthropic.com/engineering/harness-design-long-running-apps
 - matklad, ARCHITECTURE.md: https://matklad.github.io/2021/02/06/ARCHITECTURE.md.html
 
-Các nguồn này cung cấp design hypotheses. Hiệu quả của skill vẫn phải được kiểm chứng trên representative repositories và tasks.
+These sources provide design hypotheses. The skill's effectiveness still needs evaluation on representative repositories and tasks.

@@ -2,7 +2,7 @@
 
 ## 1. Goal
 
-Verification phải tạo feedback nhanh và đáng tin mà không biến `init.sh` thành build system hoặc dependency engine mới.
+Verification must provide fast, trustworthy feedback without turning `init.sh` into a new build system or dependency engine.
 
 Stable agent-facing modes:
 
@@ -12,19 +12,19 @@ Stable agent-facing modes:
 ./init.sh full
 ```
 
-Current public interface không có `doctor`. Garden định nghĩa hygiene checks; verify compose deterministic checks vào lifecycle khi relevant.
+The current public interface has no `doctor` mode. Garden defines hygiene checks; verify composes deterministic checks into the lifecycle when relevant.
 
 ## 2. Mode semantics
 
 ### `quick`
 
-Cheap health check phù hợp startup hoặc iteration sớm:
+Cheap health checks for startup or early iteration:
 
 - syntax/config validation;
-- fast type/static check;
-- smallest useful smoke test.
+- fast type or static checks;
+- the smallest useful smoke test.
 
-`./init.sh` không argument MAY default `quick` để tương thích và tránh surprising cost. Agent sau code change SHOULD gọi explicit `affected` hoặc targeted native command.
+`./init.sh` with no argument MAY default to `quick` for compatibility and to avoid surprising cost. After a code change, agents SHOULD call explicit `affected` or a targeted native command.
 
 ### `affected`
 
@@ -33,54 +33,54 @@ Default post-change verification:
 ```text
 changed files
   -> component/package mapping
-  -> reverse dependencies/shared config impact
-  -> native affected tooling hoặc conservative fallback
+  -> reverse dependencies/shared configuration impact
+  -> native affected tooling or conservative fallback
   -> relevant lint/type/test/build jobs
 ```
 
-Mapping uncertain phải widen, không skip.
+Uncertain mapping must widen, never silently skip.
 
 ### `full`
 
-Canonical repository gate theo convention hiện có. Dùng trước merge/milestone hoặc khi risk cao; không bắt mọi iteration chạy.
+The canonical repository gate according to existing conventions. Use before merge/milestone or for high-risk changes; do not run it mechanically after every edit.
 
-Khi repository có deterministic garden check, `full` SHOULD chạy cheap structural invariants trừ khi native CI/gate đã cover chúng ở nơi khác.
+When the repository has a deterministic garden check, `full` SHOULD run cheap structural invariants unless native CI/gates already cover them.
 
 ## 3. Structural hygiene composition
 
-Garden owns definitions và implementation của harness/docs/state hygiene checks. Verify executes/composes chúng theo các trigger:
+Garden owns the definitions and implementation of harness/docs/state hygiene checks. Verify executes or composes them for these triggers:
 
 | Trigger | Expected behavior |
 |---|---|
-| Feature completion | Run feature/index/link structural check |
-| Harness, docs hoặc feature state changed | `affected` includes relevant structural check |
-| `full` verification | Run cheap structural check when configured and applicable |
+| Feature completion | Run feature/index/link structural checks |
+| Harness, docs, or feature state changed | `affected` includes the relevant structural check |
+| `full` verification | Run the cheap structural check when configured and applicable |
 | Code-only local change | Do not add unrelated semantic gardening ceremony |
 
-Structural check failure MAY gate completion vì result deterministic và actionable. Semantic garden findings normally MUST NOT trở thành verification gate.
+Structural check failure MAY gate completion because the result is deterministic and actionable. Semantic garden findings normally MUST NOT become an automatic delivery gate.
 
 ## 4. Change-set contract
 
-Implementation phải nói rõ cách xác định changed files:
+Implementation must define how changed files are determined:
 
-- explicit file list/target nếu caller cung cấp;
-- local default gồm staged, unstaged và untracked files;
-- CI dùng configured base hoặc merge-base;
-- rename/delete phải map cả old/new area khi relevant;
-- lockfile, root config, shared schema hoặc build tooling SHOULD widen tới dependent components;
-- không có git context thì fallback theo explicit scope hoặc broader safe check.
+- explicit file list/target when supplied by the caller;
+- local default includes staged, unstaged, and untracked files;
+- CI uses a configured base or merge-base;
+- renames/deletes map both old and new areas when relevant;
+- lockfiles, root config, shared schemas, or build tooling SHOULD widen to dependent components;
+- without git context, use explicit scope or a broader safe check.
 
-Không dùng một `git diff` mơ hồ cho mọi environment.
+Do not use one ambiguous `git diff` behavior for every environment.
 
 ## 5. `init.sh` is an adapter
 
-`init.sh` SHOULD chỉ:
+`init.sh` SHOULD only:
 
-1. resolve repository root;
-2. parse/validate mode;
+1. resolve the repository root;
+2. parse and validate the mode;
 3. show concise help for invalid input;
-4. dispatch tới native tool hoặc helper;
-5. preserve exit code và signals.
+4. dispatch to native tools or helpers;
+5. preserve exit codes and signals.
 
 Preferred shapes:
 
@@ -88,43 +88,43 @@ Preferred shapes:
 init.sh -> make/nx/turbo/gradle/npm/pytest/etc.
 ```
 
-Hoặc khi orchestration phức tạp:
+Or, when orchestration is complex:
 
 ```text
 init.sh
   -> scripts/verify/quick.sh
   -> scripts/verify/affected.sh
   -> scripts/verify/full.sh
-  -> shared runner/library nếu thật sự cần
+  -> shared runner/library when genuinely needed
 ```
 
-Helper không bắt buộc là shell. Dùng runtime chắc chắn có trong repo.
+Helpers do not have to be shell. Use a runtime that is already reliable in the repository.
 
 ## 6. When to split helpers
 
-Tách logic khỏi `init.sh` khi có một hoặc nhiều dấu hiệu:
+Move logic out of `init.sh` when one or more applies:
 
-- nhiều component hoặc toolchain;
-- affected mapping không trivial;
-- setup/cleanup services;
+- multiple components or toolchains;
+- non-trivial affected mapping;
+- service setup/cleanup;
 - bounded parallel jobs;
 - log capture/summary;
-- shared logic giữa modes;
-- adapter trở nên khó scan hoặc khó test.
+- shared logic between modes;
+- the adapter becomes hard to scan or test.
 
-Không split thành nhiều file chỉ để mỗi command nằm một file.
+Do not split files merely to put one command in each file.
 
 ## 7. Reuse native tooling
 
-Nếu repo đã có `make check`, Nx/Turbo affected, Gradle tasks, Taskfile hoặc CI-local runner tốt, wrapper phải delegate thay vì copy logic.
+If the repository already has a good `make check`, Nx/Turbo affected command, Gradle task, Taskfile, or CI-local runner, the wrapper must delegate instead of copying logic.
 
-`init.sh` có thể không cần tồn tại nếu existing command đã stable, discoverable và phù hợp agent. Khi cần backward-compatible interface, giữ adapter rất mỏng.
+`init.sh` may be unnecessary when an existing command is stable, discoverable, and agent-friendly. If backward compatibility needs an adapter, keep it thin.
 
-Affected mapping có complexity budget. Simple explicit mapping như shared package -> known dependents là acceptable. Nếu implementation bắt đầu reconstruct một build/dependency graph đáng kể, delegate cho Nx/Turbo/Gradle/Make/workspace tooling hoặc fallback conservative. Harness MUST NOT xây dependency engine thứ hai.
+Affected mapping has a complexity budget. Simple mappings such as a shared package to known dependents are acceptable. If the implementation starts reconstructing a substantial build/dependency graph, delegate to Nx/Turbo/Gradle/Make/workspace tooling or fall back conservatively. Harness MUST NOT build a second dependency engine.
 
 ## 8. Job graph and concurrency
 
-Parallelize only independent jobs với bounded concurrency.
+Parallelize only independent jobs with bounded concurrency.
 
 ```text
 lint -----\
@@ -134,11 +134,11 @@ unit -----/
 services up -> migrate -> integration
 ```
 
-Không chạy song song jobs dùng chung mutable DB, fixture, emulator hoặc port nếu chưa isolate.
+Do not run jobs concurrently when they share a mutable database, fixture, emulator, or port without isolation.
 
 ## 9. Output contract
 
-Default output ưu tiên summary:
+Default output should be a summary:
 
 ```text
 PASS backend:type   2.1s
@@ -153,51 +153,51 @@ Full log: <path if retained>
 
 Requirements:
 
-- successful verbose logs không dump vào context;
-- failed excerpt đủ để hành động;
-- full log recoverable khi capture;
-- command failure giữ nonzero exit;
-- signal/cleanup không để process hoặc service mồ côi.
+- successful verbose logs do not flood agent context;
+- failure excerpts are actionable;
+- full logs are recoverable when captured;
+- command failures preserve a nonzero exit code;
+- signal/cleanup does not leave processes or services behind.
 
 ## 10. Required, optional, N/A
 
-Mỗi check phải được phân loại:
+Every check must be classified as:
 
 - required;
 - optional;
 - not applicable.
 
-Missing required tool/check là failure hoặc actionable configuration error. Missing optional check có thể warning/N/A. Không gọi linter là type checker và không biến “no tests configured” thành evidence tests pass.
+Missing required tools/checks are failures or actionable configuration errors. Missing optional checks may be warnings/N/A. Do not call a linter a type checker or treat “no tests configured” as evidence that tests passed.
 
 ## 11. Baseline failures
 
-Khi repo đã fail trước change:
+When the repository already fails before the change:
 
-- record relevant baseline;
-- so sánh new failures khi feasible;
-- không tự sửa unrelated failures;
-- xác định failure có block requested work không;
-- report accepted exception rõ ràng.
+- record the relevant baseline;
+- compare new failures when feasible;
+- do not silently fix unrelated failures;
+- determine whether the failure blocks the requested work;
+- report accepted exceptions clearly.
 
-Không cần chạy full baseline cho mọi local task.
+Do not run a full baseline for every local task.
 
 ## 12. Risk-proportional verification
 
 | Change | Default evidence |
 |---|---|
-| Local pure logic | Targeted test + relevant static check |
+| Local pure logic | Targeted test plus relevant static check |
 | Normal component change | Affected checks |
-| Cross-component/public API/schema/auth/persistence | Affected + relevant integration/full gate |
+| Cross-component/public API/schema/auth/persistence | Affected plus relevant integration/full gate |
 | Build/config/tooling | Relevant full build |
 
-Project convention và actual risk có thể widen hoặc narrow table này.
+Repository conventions and actual risk may widen or narrow this table.
 
 ## 13. Safety
 
 Verification MUST NOT:
 
-- install dependencies tự động nếu chưa authorized;
+- install dependencies automatically without authorization;
 - mutate production resources;
-- reset data ngoài disposable test scope;
+- reset data outside disposable test scope;
 - hide failures;
-- execute unsafe shared-state jobs concurrently.
+- run unsafe shared-state jobs concurrently.

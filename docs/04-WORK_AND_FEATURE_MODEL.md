@@ -4,16 +4,16 @@
 
 ### Class A - Local task
 
-Examples: small bug, focused refactor, one config or test change.
+Examples: a small bug, focused refactor, one config change, or a test change.
 
 ```text
 instructions
   -> focused code/test
   -> implement
-  -> targeted/affected verify
+  -> targeted/affected verification
 ```
 
-MUST NOT require feature file, persistent plan hoặc progress log.
+MUST NOT require a feature file, persistent plan, or progress log.
 
 ### Class B - Normal feature, usually one session
 
@@ -22,11 +22,11 @@ instructions
   -> relevant spec/doc
   -> short ephemeral plan
   -> implement
-  -> affected verify
-  -> update existing feature state if present
+  -> affected verification
+  -> update existing feature state when present
 ```
 
-Plan có thể ở conversation.
+The plan may stay in the conversation.
 
 ### Class C - Multi-session or cross-subsystem feature
 
@@ -38,62 +38,62 @@ feature detail
   -> concise handoff when stopping
 ```
 
-Persistent feature state tạo value vì resume cost thật sự tồn tại.
+Persistent feature state earns its cost when resume cost is real.
 
 ### Class D - Large migration
 
-MAY dùng dedicated execution plan nếu cần giữ decisions, rollout hoặc checkpoints lâu dài. Đây là exception, không phải default feature format.
+An execution plan MAY be used for long-lived decisions, rollout, or checkpoints. It is an exception, not the default feature format.
 
 ## 2. When feature state is justified
 
-Tạo `feature_index.json` và `features/*` khi ít nhất một điều đúng:
+Create `feature_index.json` and `features/*` when at least one is true:
 
-- project có explicit repository-native planned backlog, đặc biệt sau greenfield requirements/spec decomposition;
-- work kéo dài qua nhiều phiên;
-- có execution dependencies;
-- nhiều người/agent cần thấy current scope;
-- acceptance đủ lớn để chat history không đáng tin;
-- resume cost đã trở thành vấn đề.
+- the project has an explicit repository-native planned backlog, especially after greenfield requirements/spec decomposition;
+- work spans multiple sessions;
+- execution dependencies exist;
+- several people/agents need to see current scope;
+- acceptance is too large for chat history to be reliable;
+- resume cost has become a problem.
 
-Một planned feature thuộc project backlog MAY được track dù riêng feature đó dự kiến hoàn thành trong một session. Backlog trong trường hợp này là project memory, không chỉ session memory.
+A planned feature MAY be tracked even when that individual feature is expected to finish in one session. In that case the backlog is project memory, not only session memory.
 
 ```text
 Ad-hoc one-session task
-  -> không cần feature artifact
+  -> no feature artifact required
 
-Planned feature thuộc repository-native backlog
-  -> MAY track dù execution chỉ một session
+Planned feature in a repository-native backlog
+  -> MAY be tracked even when execution takes one session
 ```
 
-Không tạo backlog repo-local chỉ vì harness có template hoặc external tracker đã cung cấp execution context đầy đủ.
+Do not create a repository backlog merely because the harness has a template or an external tracker already provides complete execution context.
 
 ## 3. Execution index
 
-Index giữ planned/current execution truth và MAY giữ compact identity của completed features:
+The index stores planned/current execution truth and MAY retain compact identities for completed features:
 
 - `id`;
 - `title`;
 - `status`;
 - `depends_on`;
 - `detail`;
-- optional `specs` và `external_ref`.
+- optional `specs` and `external_ref`.
 
-Không mặc định thêm sprint, estimates, deadlines, comments hoặc assignee workflow.
+Do not add sprints, estimates, deadlines, comments, or full assignee workflow by default.
 
 ## 4. Status semantics
 
 | Status | Meaning |
 |---|---|
-| `todo` | Intent và acceptance đủ rõ, chưa bắt đầu |
-| `in_progress` | Work thực sự đang diễn ra |
-| `blocked` | Không thể tiến tiếp do dependency/decision/resource cụ thể |
-| `done` | Acceptance thỏa và relevant verification pass hoặc exception được chấp nhận |
+| `todo` | Intent and acceptance are clear; work has not started |
+| `in_progress` | Work is actually underway |
+| `blocked` | Progress is prevented by a concrete dependency, decision, or resource |
+| `done` | Acceptance is satisfied and relevant verification passes, or an exception is accepted |
 
-Nhiều `in_progress` MAY tồn tại. Status không phải lock và không tự cấp ownership cho agent.
+Multiple `in_progress` features MAY exist. Status is not a lock and does not grant ownership to an agent.
 
 ## 5. Feature detail
 
-Required khi feature được track:
+Required for a tracked feature:
 
 - Goal;
 - Scope;
@@ -103,25 +103,25 @@ Required khi feature được track:
 
 Conditional:
 
-- Non-goals khi scope dễ trượt;
-- Handoff khi work dừng trước khi hoàn thành;
-- Blocker details khi status là `blocked`.
+- Non-goals when scope can drift;
+- Handoff when work stops before completion;
+- Blocker details when status is `blocked`.
 
-Không duplicate status nếu index là canonical.
+Do not duplicate status when the index is canonical.
 
 ## 6. Acceptance quality
 
-Acceptance MUST observable hoặc verifiable.
+Acceptance MUST be observable or verifiable.
 
-Tốt:
+Good:
 
-> Invalid refresh token returns 401 and does not create a session.
+> An invalid refresh token returns 401 and does not create a session.
 
-Không tốt:
+Bad:
 
 > Authentication is implemented cleanly.
 
-Feature chỉ `done` khi:
+A feature is `done` only when:
 
 ```text
 acceptance satisfied
@@ -131,20 +131,20 @@ acceptance satisfied
 
 ## 7. Dependencies
 
-Dependency phải là execution dependency thực, không chỉ “có liên quan”. Structural validation SHOULD kiểm tra:
+A dependency must be a real execution dependency, not merely “related”. Structural validation SHOULD check:
 
-- unique IDs và detail paths;
-- referenced feature tồn tại;
-- không self-dependency hoặc cycle;
-- path nằm trong expected repository area;
-- detail/spec file tồn tại;
-- status consistency cơ bản.
+- unique IDs and detail paths;
+- referenced features exist;
+- no self-dependency or cycle;
+- paths stay inside expected repository areas;
+- detail/spec files exist;
+- basic status consistency.
 
-JSON Schema chỉ validate shape; garden structural scan validate cross-record/file invariants.
+JSON Schema validates shape; the garden structural scan validates cross-record and file invariants.
 
 ## 8. Handoff
 
-Handoff chỉ ghi state cần để resume:
+Handoff records only state needed to resume:
 
 ```text
 Done
@@ -153,32 +153,32 @@ Blocker
 Next
 ```
 
-Không ghi diary, full command logs hoặc lịch sử đã có trong git.
+Do not write a diary, full command logs, or history already available in git.
 
-Khi feature hoàn tất, remove stale Handoff hoặc giữ một completion note rất ngắn nếu nó còn value.
+When a feature completes, remove stale Handoff content or keep only a very short completion note if it still has durable value.
 
 ## 9. Completed feature retention
 
-`done` không nên giữ detail/handoff rác vô hạn, nhưng compact feature identity có giá trị chống duplicate planning.
+`done` should not preserve detail/Handoff garbage forever, but compact feature identity helps prevent duplicate planning.
 
-Default cho team nhỏ:
+Default for a small team:
 
-- remove stale Handoff/blocker khi completion;
-- compact hoặc remove detail trước nếu nó không còn durable value;
-- giữ compact index entry lâu hơn để agent biết feature đã tồn tại và hoàn thành;
-- chỉ prune old done identity sau milestone/release hoặc khi index thực sự lớn và external/git history đáng tin;
-- không tạo `features/archive/` mặc định.
+- remove stale Handoff/blocker on completion;
+- compact or remove low-value detail first;
+- retain a compact index entry long enough for agents to know the feature existed and was completed;
+- prune old done identity only after a milestone/release, or when the index is genuinely large and reliable git/external history exists;
+- do not create `features/archive/` by default.
 
-Repo MAY chọn retention khác, nhưng phải ghi rõ và tránh index phình vô hạn.
+The repository MAY choose another retention policy, but it should be explicit and prevent unbounded index growth.
 
 ## 10. External tracker
 
-External tracker tiếp tục là source cho team management. `external_ref` MAY link issue liên quan.
+The external tracker remains the source for team management. `external_ref` MAY link a related issue.
 
-Feature index không mirror metadata. Nếu external tracker đã cung cấp đủ scope, acceptance và handoff cho agent trong repo/tool context, không cần tạo index thứ hai.
+The feature index must not mirror tracker metadata. If the external tracker already provides enough scope, acceptance, and handoff for the agent in its working context, a second index is unnecessary.
 
 ## 11. Global progress log
 
 Default off.
 
-Chỉ thêm khi per-feature handoff và git history vẫn không đủ cho long-running autonomous work hoặc operations không map vào feature. Nếu dùng, log phải ngắn và không trở thành daily diary.
+Add one only when feature Handoff and git history remain insufficient for long-running autonomous work or operations do not map to features. Keep it short; it must not become a daily diary.

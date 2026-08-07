@@ -6,55 +6,55 @@
 inspect existing instructions/docs/tools/state
   -> identify actual agent pain points
   -> classify missing capabilities
-  -> choose minimal workflows
+  -> choose the smallest set of phases
   -> patch/reuse existing artifacts
   -> run relevant verification
   -> report omissions and uncertainties
 ```
 
-Typical existing repo:
+Typical existing-repository sequence:
 
 ```text
 map only if navigation is weak
-  -> verify only if commands are fragmented/unclear
+  -> verify only if commands are fragmented or unclear
   -> specs only for durable ambiguous behavior
-  -> features only for planned multi-step work
+  -> features only for planned or persistent work
 ```
 
-Garden không phải default bootstrap step, nhưng MAY chạy focused structural cleanup nếu adoption phát hiện stale harness artifacts và user requested upgrade/cleanup.
+Garden is not a default bootstrap phase, but MAY run focused structural cleanup when adoption finds stale harness artifacts and the user requested cleanup/upgrade.
 
 ## 2. Near-empty greenfield
 
 ```text
 requirements
   -> specs for non-trivial behavior
-  -> proposed architecture with assumptions
-  -> coherent feature slices if work is multi-step
+  -> proposed architecture with explicit assumptions
+  -> coherent feature slices when work is multi-step
   -> code/tooling scaffold outside harness scope
   -> verification adapter once commands are real
 ```
 
-Không viết observed maps hoặc runnable commands chưa tồn tại.
+Do not write observed maps or runnable commands that do not exist yet.
 
 ## 3. Local task after harness exists
 
 ```text
 read instruction router
-  -> one relevant doc if needed
-  -> inspect narrow code/test slice
+  -> one relevant doc when needed
+  -> inspect a narrow code/test slice
   -> implement
-  -> targeted/affected verify
+  -> targeted/affected verification
   -> docs-impact question
 ```
 
-Docs-impact question:
+Docs-impact questions:
 
-- behavior contract changed?
-- architecture boundary changed?
-- recurring subsystem rule changed?
-- canonical command changed?
+- Did the behavior contract change?
+- Did an architecture boundary change?
+- Did a recurring subsystem rule change?
+- Did the canonical command change?
 
-Nếu đều `no`, không update docs.
+If all answers are `no`, do not update docs.
 
 ## 4. Normal feature
 
@@ -68,23 +68,23 @@ request or existing feature detail
   -> acceptance review
 ```
 
-Không tạo persistent feature artifact nếu task dự kiến xong trong một session và scope đã rõ.
+Do not create persistent feature artifacts when the task should finish in one session and its scope is already clear, unless it belongs to an explicit repository backlog.
 
 ## 5. Multi-session feature
 
 At start:
 
-1. identify primary feature from user/task context;
-2. read its detail và linked docs;
-3. inspect recent code/history needed;
-4. run baseline quick/targeted check only if useful.
+1. identify the primary feature from user/task context;
+2. read its detail and linked docs;
+3. inspect recent code/history as needed;
+4. run a baseline quick/targeted check only when useful.
 
-At stop before completion:
+Before stopping:
 
-1. leave code in coherent state when feasible;
-2. record concise Handoff;
-3. update blocker/status only if truth changed;
-4. record relevant verification result, not full logs.
+1. leave code coherent when feasible;
+2. record a concise Handoff;
+3. update blocker/status only when truth changed;
+4. record relevant verification results, not full logs.
 
 At completion:
 
@@ -97,25 +97,25 @@ acceptance satisfied
   -> update canonical docs only if impacted
 ```
 
-Không claim completion nếu structural check sau state update fail.
+Do not claim completion if the structural check after the state update fails.
 
 ## 6. Team concurrency
 
 - Multiple `in_progress` features are allowed.
 - User/task assignment determines primary work.
-- Agent MUST NOT take over feature merely because it sees status.
+- An agent MUST NOT take over a feature merely because it sees the status.
 - Existing branch/worktree conventions handle code isolation.
 - Harness does not add locks or leases.
 
-When collision risk is visible, report it and coordinate through the team’s existing mechanism.
+When collision risk is visible, report it and coordinate through the team's existing mechanism.
 
 ## 7. Verification workflow
 
 During implementation:
 
 - use targeted native tests for tight feedback;
-- run `affected` after coherent local change;
-- include garden-owned structural check when harness/docs/feature state changed;
+- run `affected` after a coherent local change;
+- include the garden-owned structural check when harness/docs/feature state changed;
 - widen for shared contracts/config/public interfaces;
 - use `full` according to risk or merge convention.
 
@@ -125,12 +125,12 @@ Do not run full repository checks mechanically after every edit.
 
 ```text
 classify user intent: audit vs cleanup
-  -> choose smallest scope
+  -> choose the smallest scope
   -> run structural checks
-  -> sample semantic evidence if relevant
+  -> sample semantic evidence when relevant
   -> repair high-confidence scoped issues when authorized
   -> verify changed artifacts/behavior
-  -> concise findings and remaining ambiguity
+  -> report findings and remaining ambiguity concisely
 ```
 
 Cleanup can finish in one invocation; persistent remediation plans are conditional.
@@ -138,7 +138,7 @@ Cleanup can finish in one invocation; persistent remediation plans are condition
 ## 9. Failure handling
 
 - Insufficient evidence -> write less and label uncertainty.
-- Existing unrelated failures -> baseline/report, do not silently expand scope.
-- Conflicting truth -> use conflict protocol, do not normalize automatically.
-- Missing optional capability -> omit it and state why if relevant.
-- Existing useful custom workflow -> preserve/reuse it.
+- Existing unrelated failures -> baseline/report; do not silently expand scope.
+- Conflicting truth -> use the conflict protocol; do not normalize automatically.
+- Missing optional capability -> omit it and state why when relevant.
+- Existing useful custom workflow -> preserve and reuse it.

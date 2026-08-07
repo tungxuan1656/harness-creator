@@ -2,18 +2,18 @@
 
 ## 1. Problem
 
-AI coding agent thường mất hiệu quả ở bốn điểm:
+AI coding agents commonly lose effectiveness in four places:
 
-1. **Orientation cost** - không biết code liên quan nằm ở đâu.
-2. **Intent loss** - behavior, boundaries và conventions không discoverable.
-3. **Execution drift** - làm quá scope hoặc tuyên bố xong trước khi verify.
-4. **Entropy** - stale docs và bad patterns tiếp tục được sao chép.
+1. **Orientation cost** - the relevant code is hard to locate.
+2. **Intent loss** - behavior, boundaries, and conventions are not discoverable.
+3. **Execution drift** - the agent exceeds scope or claims completion before verification.
+4. **Entropy** - stale docs and bad patterns continue to be copied.
 
-Harness tồn tại để giảm bốn chi phí này. Nó không phải project-management framework.
+Harness exists to reduce these costs. It is not a project-management framework.
 
 ## 2. Priority order
 
-Khi hai mục tiêu xung đột, ưu tiên:
+When goals conflict, prefer:
 
 ```text
 Correctness
@@ -23,116 +23,114 @@ Correctness
   -> documentation completeness
 ```
 
-Documentation completeness đứng sau vì nhiều file không đồng nghĩa agent làm tốt hơn.
+Documentation completeness comes last because more files do not automatically make an agent better.
 
 ## 3. Success conditions
 
-Một harness tốt giúp agent:
+A good harness helps an agent:
 
-- tìm entry point và code owner nhanh;
-- đọc ít tài liệu hơn nhưng đoán ít hơn;
-- phân biệt intended behavior với observed implementation;
-- giữ scope theo user request hoặc feature acceptance;
-- chạy check đúng mức risk;
-- resume feature dài mà không cần đọc lại toàn repo;
-- không để state/docs rác tích tụ lâu dài.
+- find entry points and code ownership quickly;
+- read less while making fewer guesses;
+- distinguish intended behavior from observed implementation;
+- stay within the user request or feature acceptance;
+- run checks at the right risk level;
+- resume long-running work without rereading the whole repository;
+- prevent state and documentation garbage from accumulating.
 
 ## 4. Complexity must be earned
 
-Trước khi tạo artifact, hỏi:
+Before creating an artifact, ask:
 
-> Failure mode cụ thể nào sẽ xảy ra nếu artifact này không tồn tại?
+> What concrete failure mode will occur if this artifact does not exist?
 
-Ví dụ:
-
-| Artifact | Chỉ đáng tạo khi |
+| Artifact | Worth creating when |
 |---|---|
-| Architecture overview | Repo đủ lớn để orientation từ code tốn kém; target medium repo mặc định đã đạt ngưỡng này |
-| Subsystem doc | Pattern/boundary của subsystem khó suy ra hoặc hay bị làm sai |
-| Product spec | Business rule hoặc edge case không thể đoán an toàn |
-| Feature state | Project cần planned backlog hoặc work có dependency/handoff/persistence |
-| Verify helper | Existing tool không cung cấp agent-facing command đủ rõ |
-| Persistent garden report | Cleanup kéo dài qua nhiều phiên hoặc cần review riêng |
+| Architecture overview | Orientation from code is expensive; the medium-repo target normally meets this bar |
+| Subsystem guide | A subsystem pattern or boundary is hard to infer or often implemented incorrectly |
+| Product spec | A business rule or edge case cannot be safely inferred |
+| Feature state | The project has a planned backlog or work needs dependency, handoff, or persistence |
+| Verification helper | Existing tools do not provide a clear agent-facing command |
+| Persistent garden report | Cleanup spans sessions or needs separate review |
 
-Missing optional artifact tốt hơn placeholder hoặc generic prose.
+Missing optional artifacts are better than placeholders or generic prose.
 
-Với target 10k-200k LOC của corpus này:
+For this corpus's 10k-200k LOC target:
 
-- agent instruction entry point (`AGENTS.md` hoặc equivalent) MUST tồn tại;
-- architecture overview (`ARCHITECTURE.md` hoặc existing equivalent) SHOULD tồn tại;
-- chỉ omit architecture overview khi repo thực sự trivial hoặc existing docs đã trả lời đủ topology, entry points và boundaries.
+- `AGENTS.md` or an equivalent agent instruction entry point MUST exist;
+- an architecture overview (`ARCHITECTURE.md` or an equivalent) SHOULD exist;
+- omit the architecture overview only when the repository is genuinely trivial or existing docs already cover topology, entry points, and boundaries.
 
-Subsystem docs, specs, feature state và helper scripts vẫn hoàn toàn conditional.
+Subsystem docs, specs, feature state, and helper scripts remain conditional.
 
 ## 5. Progressive disclosure
 
-Không yêu cầu agent đọc toàn bộ docs trước khi code.
+Do not require an agent to read the entire documentation tree before coding.
 
 ```text
 AGENTS.md
-  -> classify task
-  -> focused architecture/subsystem/spec/feature doc nếu cần
+  -> classify the task
+  -> focused architecture/subsystem/spec/feature doc when needed
   -> narrow code slice
   -> targeted feedback
 ```
 
-`AGENTS.md` là router, không phải encyclopedia.
+`AGENTS.md` is a router, not an encyclopedia.
 
 ## 6. Flexible work model
 
-Team 1-4 người cần coordination nhẹ:
+Teams of 1-4 need lightweight coordination:
 
-- nhiều feature MAY cùng `in_progress`;
-- một agent/session SHOULD có một primary task;
-- feature index không phải lock hoặc ownership system;
-- branch/worktree/issue assignment tiếp tục theo convention của repo;
-- không thêm lease, scheduler hoặc workflow approval mặc định.
+- multiple features MAY be `in_progress`;
+- one agent/session SHOULD have one primary task;
+- the feature index is not a lock or ownership system;
+- branch, worktree, and issue assignment follow repository conventions;
+- do not add leases, schedulers, or workflow approvals by default.
 
-## 7. Intended vs observed truth
+## 7. Intended versus observed truth
 
-- Specs và architecture rules mô tả **intended** behavior/boundaries.
-- Code, tests và runtime evidence mô tả **observed** implementation.
+- Specs and architecture rules describe **intended** behavior and boundaries.
+- Code, tests, and runtime evidence describe **observed** implementation.
 
-Khi conflict:
+When they conflict:
 
 ```text
 collect evidence
   -> classify stale doc / code defect / test defect / incomplete migration / ambiguity
-  -> repair đúng layer
+  -> repair the correct layer
 ```
 
-MUST NOT tự động chọn code hoặc docs là đúng.
+MUST NOT automatically assume that code or docs are correct.
 
 ## 8. Stable interfaces, replaceable implementation
 
-Agent-facing interfaces nên ít và ổn định:
+Agent-facing interfaces should be few and stable:
 
 - instruction entry point;
 - documentation routes;
 - optional feature state;
 - verification commands.
 
-Implementation phía sau có thể dùng Make, Nx, Turbo, Gradle, npm, pytest, shell, Node hoặc Python tùy repo.
+The implementation may use Make, Nx, Turbo, Gradle, npm, pytest, shell, Node, or Python according to the repository.
 
 ## 9. Non-goals
 
-Harness MUST NOT cố trở thành:
+Harness MUST NOT become:
 
-- Jira/Linear/GitHub Issues replacement;
-- build system mới;
-- universal architecture framework;
-- full repository reverse-engineering report;
-- semantic correctness oracle;
-- enterprise governance hoặc compliance layer;
-- mandatory multi-agent coordination protocol;
-- generator tạo mọi file trong một fixed tree.
+- a Jira/Linear/GitHub Issues replacement;
+- a new build system;
+- a universal architecture framework;
+- a full repository reverse-engineering report;
+- a semantic correctness oracle;
+- an enterprise governance or compliance layer;
+- a mandatory multi-agent coordination protocol;
+- a generator that creates every file in a fixed tree.
 
 ## 10. Decision test
 
-Mỗi rule hoặc artifact mới phải vượt qua ba câu hỏi:
+Every new rule or artifact must answer:
 
-1. Nó ngăn failure mode nào đã thấy hoặc có xác suất cao?
-2. Agent có phải trả chi phí này cho mọi task không?
-3. Có cách nhẹ hơn để đạt cùng kết quả không?
+1. Which observed or likely failure mode does it prevent?
+2. Must every task pay its cost?
+3. Is there a lighter way to achieve the same result?
 
-Nếu lợi ích chưa rõ, mặc định không thêm.
+If the benefit is unclear, do not add it by default.

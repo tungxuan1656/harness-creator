@@ -1,79 +1,79 @@
 # Design Decisions
 
-Decision log này chỉ giữ các lựa chọn ảnh hưởng lớn đến skill architecture và target repository. Detailed rules sống trong canonical topic docs.
+This decision log keeps only choices that materially affect skill architecture and the target repository. Detailed rules live in the canonical topic docs.
 
-Mọi decision MAY được revisit bằng eval/ablation data; accepted không có nghĩa bất biến vĩnh viễn.
+Every decision MAY be revisited with evaluation or ablation data; accepted does not mean permanently frozen.
 
 ## D001 - Optimize for medium repositories and small teams
 
 **Status:** Accepted
 
-Target mặc định là project khoảng 10k-200k LOC và team 1-4 người. Correctness, fast feedback và low task overhead quan trọng hơn enterprise governance.
+The default target is a 10k-200k LOC project and a 1-4 person team. Correctness, fast feedback, and low task overhead matter more than enterprise governance.
 
 ## D002 - Instructions are a router, not an encyclopedia
 
 **Status:** Accepted
 
-Agent entry instructions route tới focused architecture, specs, feature state và verification. Progressive disclosure tránh crowding task context.
+Agent entry instructions route to focused architecture, specs, feature state, and verification. Progressive disclosure prevents task-context crowding.
 
 ## D003 - Baseline navigation capability
 
 **Status:** Accepted
 
-`AGENTS.md` hoặc equivalent MUST tồn tại. Architecture overview SHOULD tồn tại cho medium repo, trừ khi repo trivial hoặc existing doc đã cung cấp topology, entry points và boundaries.
+`AGENTS.md` or an equivalent MUST exist. An architecture overview SHOULD exist for a medium repository unless the repository is trivial or an existing doc already provides topology, entry points, and boundaries.
 
 ## D004 - Hybrid skill architecture
 
 **Status:** Accepted
 
-Preferred distribution gồm router `harness` và năm specialist skills: `harness-map`, `harness-specs`, `harness-features`, `harness-verify`, `harness-garden`.
+The preferred distribution includes a `harness` router and five specialist skills: `harness-map`, `harness-specs`, `harness-features`, `harness-verify`, and `harness-garden`.
 
-Khi platform không compose được skills, router dùng workflow references tương ứng nhưng bắt buộc phase isolation. Lý do là giảm cognitive task interference mà vẫn giữ portable adoption UX.
+When the platform cannot compose skills, the router uses the corresponding workflow references but enforces phase isolation. This reduces cognitive task interference while preserving a portable adoption experience.
 
 ## D005 - Feature state covers planned project memory
 
 **Status:** Accepted
 
-Feature state dùng cho persistent execution needs và repository-native planned backlog, đặc biệt greenfield decomposition. Ad-hoc one-session task không cần artifact; planned one-session feature MAY được track.
+Feature state covers persistent execution needs and repository-native planned backlogs, especially greenfield decomposition. An ad-hoc one-session task does not need an artifact; a planned one-session feature MAY be tracked.
 
 ## D006 - Multiple features may be in progress
 
 **Status:** Accepted
 
-Team nhỏ có thể làm song song. Một agent/session focus một primary task, nhưng repository không enforce global one-active lock.
+A small team may work in parallel. One agent/session focuses on one primary task, but the repository does not enforce a global one-active lock.
 
 ## D007 - No global progress log by default
 
 **Status:** Accepted
 
-Feature Handoff, git và external tracker cover normal resume needs. Global progress log chỉ thêm khi measured resume cost vẫn cao.
+Feature Handoff, git, and the external tracker cover normal resume needs. Add a global progress log only when measured resume cost remains high.
 
-## D008 - Verification exposes quick, affected and full
+## D008 - Verification exposes quick, affected, and full
 
 **Status:** Accepted
 
-`affected` là default post-change path; `full` theo risk/milestone. Current design không expose public `doctor`; đây là interface decision có thể revisit, không phải invariant vĩnh viễn.
+`affected` is the default post-change path; `full` is used by risk/milestone. The current design does not expose a public `doctor`; this is an interface choice that may be revisited, not a permanent invariant.
 
 ## D009 - Garden owns maintenance; verify composes structural checks
 
 **Status:** Accepted
 
-Garden owns deterministic structural checks và evidence-based semantic audit. Feature completion, affected harness changes và full verification run cheap structural checks when applicable. Semantic findings normally do not gate delivery.
+Garden owns deterministic structural checks and evidence-based semantic audits. Feature completion, affected harness changes, and full verification run cheap structural checks when applicable. Semantic findings normally do not gate delivery.
 
 ## D010 - `init.sh` is a thin adapter
 
 **Status:** Accepted
 
-Adapter resolves root, parses mode, dispatches và preserves exit semantics. Complex logic belongs in native tooling or conditional helpers. Harness does not build a second dependency engine.
+The adapter resolves the root, parses modes, dispatches, and preserves exit semantics. Complex logic belongs in native tooling or conditional helpers. Harness does not build a second dependency engine.
 
 ## D011 - Intended and observed truth remain distinct
 
 **Status:** Accepted
 
-Specs/architecture describe intended or proposed truth; code/tests/runtime provide observed evidence. Conflict requires classification, not automatic normalization.
+Specs/architecture describe intended or proposed truth; code/tests/runtime provide observed evidence. Conflicts require classification, not automatic normalization.
 
 ## D012 - Compact completed identity before pruning it
 
 **Status:** Accepted
 
-On completion remove stale Handoff and compact low-value detail first. Keep compact done index identity longer to prevent duplicate planning; prune identity only when index cost is real and reliable history exists elsewhere.
+On completion, remove stale Handoff and compact low-value detail first. Keep compact done index identity longer to prevent duplicate planning; prune identity only when index cost is real and reliable history exists elsewhere.
