@@ -1,11 +1,11 @@
 ---
 name: harness
 description: >-
-  Build, adopt, audit, and improve a lightweight repository harness that helps
-  coding agents navigate code, preserve intent, stay in scope, verify changes,
-  and clean stale agent-facing artifacts. Use for agent instructions, repository
-  maps, durable specs, multi-session feature state, verification adapters, or
-  harness gardening. Do not use for ordinary coding tasks with no harness need.
+  Adopt or upgrade a lightweight repository harness for coding agents by
+  auditing missing capabilities and routing work to focused map, specs,
+  features, verify, or garden phases. Use for repository-wide harness setup or
+  migration. Do not use for an ordinary coding task or a single focused harness
+  concern already covered by a specialist skill.
 ---
 
 # Purpose
@@ -16,9 +16,9 @@ description: >-
 
 # First Move
 
-# Request Classification
+# Capability Audit
 
-## Adopt
+# Phase Selection
 
 ## Map
 
@@ -30,6 +30,10 @@ description: >-
 
 ## Garden
 
+# Phase Isolation
+
+Complete and validate one phase before loading the next phase reference.
+
 # Output Contract
 
 # Mutation and Rerun Rules
@@ -39,3 +43,9 @@ description: >-
 # Quality Gates
 
 # When to Load References
+
+- Map: `references/map.md`
+- Specs: `references/specs.md`
+- Features: `references/features.md`
+- Verify: `references/verify.md`
+- Garden: `references/garden.md`

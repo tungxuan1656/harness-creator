@@ -9,7 +9,7 @@
 - Architecture: `<existing architecture doc>`
 - Documentation map: `<docs index, if useful>`
 - Feature state: `<feature_index.json, only if enabled>`
-- Verification: `./init.sh affected` or `<existing canonical command>`
+- Verification: `<affected verification command>`
 
 ## Task routing
 

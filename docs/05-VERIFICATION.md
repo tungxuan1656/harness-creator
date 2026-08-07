@@ -2,7 +2,7 @@
 
 ## 1. Goal
 
-Verification phải tạo feedback nhanh và đáng tin mà không biến `init.sh` thành build system mới.
+Verification phải tạo feedback nhanh và đáng tin mà không biến `init.sh` thành build system hoặc dependency engine mới.
 
 Stable agent-facing modes:
 
@@ -12,7 +12,7 @@ Stable agent-facing modes:
 ./init.sh full
 ```
 
-Không có `doctor`. Harness/docs/state maintenance thuộc garden workflow.
+Current public interface không có `doctor`. Garden định nghĩa hygiene checks; verify compose deterministic checks vào lifecycle khi relevant.
 
 ## 2. Mode semantics
 
@@ -44,7 +44,22 @@ Mapping uncertain phải widen, không skip.
 
 Canonical repository gate theo convention hiện có. Dùng trước merge/milestone hoặc khi risk cao; không bắt mọi iteration chạy.
 
-## 3. Change-set contract
+Khi repository có deterministic garden check, `full` SHOULD chạy cheap structural invariants trừ khi native CI/gate đã cover chúng ở nơi khác.
+
+## 3. Structural hygiene composition
+
+Garden owns definitions và implementation của harness/docs/state hygiene checks. Verify executes/composes chúng theo các trigger:
+
+| Trigger | Expected behavior |
+|---|---|
+| Feature completion | Run feature/index/link structural check |
+| Harness, docs hoặc feature state changed | `affected` includes relevant structural check |
+| `full` verification | Run cheap structural check when configured and applicable |
+| Code-only local change | Do not add unrelated semantic gardening ceremony |
+
+Structural check failure MAY gate completion vì result deterministic và actionable. Semantic garden findings normally MUST NOT trở thành verification gate.
+
+## 4. Change-set contract
 
 Implementation phải nói rõ cách xác định changed files:
 
@@ -57,7 +72,7 @@ Implementation phải nói rõ cách xác định changed files:
 
 Không dùng một `git diff` mơ hồ cho mọi environment.
 
-## 4. `init.sh` is an adapter
+## 5. `init.sh` is an adapter
 
 `init.sh` SHOULD chỉ:
 
@@ -85,7 +100,7 @@ init.sh
 
 Helper không bắt buộc là shell. Dùng runtime chắc chắn có trong repo.
 
-## 5. When to split helpers
+## 6. When to split helpers
 
 Tách logic khỏi `init.sh` khi có một hoặc nhiều dấu hiệu:
 
@@ -99,13 +114,15 @@ Tách logic khỏi `init.sh` khi có một hoặc nhiều dấu hiệu:
 
 Không split thành nhiều file chỉ để mỗi command nằm một file.
 
-## 6. Reuse native tooling
+## 7. Reuse native tooling
 
 Nếu repo đã có `make check`, Nx/Turbo affected, Gradle tasks, Taskfile hoặc CI-local runner tốt, wrapper phải delegate thay vì copy logic.
 
 `init.sh` có thể không cần tồn tại nếu existing command đã stable, discoverable và phù hợp agent. Khi cần backward-compatible interface, giữ adapter rất mỏng.
 
-## 7. Job graph and concurrency
+Affected mapping có complexity budget. Simple explicit mapping như shared package -> known dependents là acceptable. Nếu implementation bắt đầu reconstruct một build/dependency graph đáng kể, delegate cho Nx/Turbo/Gradle/Make/workspace tooling hoặc fallback conservative. Harness MUST NOT xây dependency engine thứ hai.
+
+## 8. Job graph and concurrency
 
 Parallelize only independent jobs với bounded concurrency.
 
@@ -119,7 +136,7 @@ services up -> migrate -> integration
 
 Không chạy song song jobs dùng chung mutable DB, fixture, emulator hoặc port nếu chưa isolate.
 
-## 8. Output contract
+## 9. Output contract
 
 Default output ưu tiên summary:
 
@@ -142,7 +159,7 @@ Requirements:
 - command failure giữ nonzero exit;
 - signal/cleanup không để process hoặc service mồ côi.
 
-## 9. Required, optional, N/A
+## 10. Required, optional, N/A
 
 Mỗi check phải được phân loại:
 
@@ -152,7 +169,7 @@ Mỗi check phải được phân loại:
 
 Missing required tool/check là failure hoặc actionable configuration error. Missing optional check có thể warning/N/A. Không gọi linter là type checker và không biến “no tests configured” thành evidence tests pass.
 
-## 10. Baseline failures
+## 11. Baseline failures
 
 Khi repo đã fail trước change:
 
@@ -164,7 +181,7 @@ Khi repo đã fail trước change:
 
 Không cần chạy full baseline cho mọi local task.
 
-## 11. Risk-proportional verification
+## 12. Risk-proportional verification
 
 | Change | Default evidence |
 |---|---|
@@ -175,7 +192,7 @@ Không cần chạy full baseline cho mọi local task.
 
 Project convention và actual risk có thể widen hoặc narrow table này.
 
-## 12. Safety
+## 13. Safety
 
 Verification MUST NOT:
 

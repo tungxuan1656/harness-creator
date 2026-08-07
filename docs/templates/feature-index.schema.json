@@ -56,7 +56,7 @@
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "^(?!.*\\.\\./)docs/specs/[A-Za-z0-9._/-]+\\.md$"
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+\\.md$"
             },
             "uniqueItems": true
           },

@@ -1,223 +1,287 @@
-# Skill Spec - `harness`
+# Harness Skill Architecture
 
 ## 1. Purpose
 
 Build, adopt, audit và improve một lightweight repository harness giúp coding agents hiểu code nhanh, giữ scope và nhận feedback đúng mức risk.
 
-Skill phục vụ nhiều repository trung bình và team 1-4 người. Nó ưu tiên delivery speed, progressive disclosure và existing project conventions.
+Target là repository trung bình, team 1-4 người và feature thường hoàn thành trong một hoặc vài phiên. Skill architecture phải giữ delivery speed, progressive disclosure và existing project conventions.
 
-## 2. Use when
+## 2. Chosen architecture
 
-Trigger khi user muốn:
+Preferred distribution khi platform hỗ trợ multiple installed skills:
 
-- setup/upgrade repo cho AI coding agents;
-- tạo hoặc cải thiện agent instructions và repository map;
-- giảm thời gian agent tìm code hoặc hiểu boundaries;
-- chuẩn hóa product specs hoặc multi-session feature state;
-- tạo/cải thiện verification entry point;
-- audit/cleanup stale harness, docs, state hoặc recurring bad patterns;
-- migrate từ `harness-slim` cũ.
+```text
+harness                 # thin router/adoption coordinator
+harness-map             # repository cognition and navigation
+harness-specs           # product/domain behavior
+harness-features        # planned backlog, scope, acceptance, handoff
+harness-verify          # feedback interface and orchestration
+harness-garden          # structural and semantic maintenance
+```
 
-Description của skill phải nói outcome/problem, không chỉ liệt kê filenames.
+Lý do tách theo cognitive responsibility: reverse-engineering architecture, formalizing product behavior, backlog decomposition, verification design và semantic cleanup cần evidence, stopping rules và quality gates khác nhau.
 
-## 3. Do not use when
+## 3. Portable fallback
 
-Không trigger cho:
+Một số platform không cho router invoke skill khác hoặc user chỉ cài `harness`. Trong profile này, router MAY thực thi cùng workflow references nhưng MUST giữ phase isolation:
 
-- coding task bình thường chỉ vì repo có harness;
-- generic architecture refactor không liên quan agent legibility;
-- project-management workflow;
+```text
+capability audit
+  -> select only needed phases
+  -> inspect MAP evidence
+  -> produce + validate MAP artifacts
+  -> close MAP phase
+  -> inspect SPEC evidence
+  -> produce + validate SPEC artifacts
+  -> close SPEC phase
+  -> continue only when requested/justified
+```
+
+MUST NOT cùng lúc derive architecture, specs, backlog và verification tooling trong một undifferentiated reasoning pass.
+
+## 4. Router contract - `harness`
+
+Use when user muốn setup, adopt, upgrade hoặc audit tổng thể repository harness.
+
+Router chỉ:
+
+1. inspect root capabilities và current pain point;
+2. classify greenfield/existing, topology và installed skill support;
+3. choose minimal ordered phases;
+4. delegate tới specialized skill khi available;
+5. otherwise load exactly one matching workflow reference;
+6. require phase-specific quality gate before continuing;
+7. run final cross-link/command sanity check;
+8. report reused, created và intentionally omitted capabilities.
+
+Router MUST NOT reimplement all specialist details in its core `SKILL.md`.
+
+## 5. Specialist contracts
+
+### `harness-map`
+
+Use when agent khó locate code, understand topology/boundaries hoặc instructions/docs routing yếu.
+
+Owns generation/rerun behavior for:
+
+- root/tool-specific instruction routing;
+- architecture overview hoặc existing equivalent;
+- docs index;
+- conditional subsystem docs.
+
+It inspects topology, real entry points, representative flows/tests và separates observed patterns from intended rules.
+
+### `harness-specs`
+
+Use when product/domain behavior, permissions, state transitions, public contracts hoặc edge cases không thể suy ra an toàn.
+
+Owns generation/rerun behavior for canonical repository-local specs. It records sources/uncertainties and does not treat current code as intended truth automatically.
+
+### `harness-features`
+
+Use when greenfield requirements cần planned repository backlog hoặc work cần persistent scope, dependencies, acceptance hay handoff.
+
+Owns feature schema/index/detail behavior. It MUST distinguish planned project features from ad-hoc one-session tasks and MUST NOT reverse-engineer existing functionality into a fake backlog.
+
+### `harness-verify`
+
+Use when existing commands fragmented, slow, unclear hoặc thiếu stable affected feedback.
+
+Owns `init.sh`/verify helper behavior, reuses native tools, preserves failures and composes garden-owned structural checks when applicable.
+
+### `harness-garden`
+
+Use for audit/cleanup of stale instructions, docs, feature state, verify adapters hoặc recurring bad patterns.
+
+Owns structural maintenance checks và semantic gardening. Structural invariants may gate; semantic findings normally do not.
+
+## 6. Trigger boundaries
+
+Harness skills SHOULD trigger for:
+
+- setup/upgrade repo for coding agents;
+- agents repeatedly read wrong modules or violate boundaries;
+- durable product behavior needs repository-local truth;
+- greenfield backlog or multi-session feature state;
+- fast affected verification entry point;
+- stale harness/docs/state cleanup;
+- migration from `harness-slim`.
+
+They SHOULD NOT trigger for:
+
+- ordinary focused coding task with no harness issue;
+- generic refactor unrelated to agent legibility;
+- product-management workflow;
 - model selection hoặc prompt tuning riêng lẻ;
-- enterprise governance/compliance framework.
+- enterprise governance framework.
 
-## 4. Internal workflows
+Specialist metadata descriptions must name both positive triggers and meaningful exclusions to reduce collision.
 
-Skill classify request rồi chỉ load workflow cần:
+## 7. Shared first move
 
-| Workflow | Responsibility |
-|---|---|
-| `adopt` | Capability audit và minimal setup/upgrade |
-| `map` | Instructions, architecture và focused subsystem routing |
-| `specs` | Durable product/domain behavior |
-| `features` | Persistent execution scope/state/handoff |
-| `verify` | Fast canonical feedback interface |
-| `garden` | Structural + semantic cleanup |
-
-Đây là internal workflows/references, không phải separate installed skills.
-
-## 5. First move
-
-Inspect trước khi hỏi hoặc tạo file:
+Inspect before asking or creating:
 
 - root tree 1-2 levels;
 - git status;
-- agent instruction files, kể cả nested;
+- agent instruction files, including nested;
 - README/contributing/existing docs;
-- manifests, workspace and build configs;
-- CI and existing test commands;
+- manifests, workspace/build configs and CI;
+- existing test commands;
 - existing issue/feature state;
-- representative code only when map/spec correctness needs it.
+- representative code only when phase correctness needs it.
 
-Chỉ hỏi user cho information không thể infer an toàn và có ảnh hưởng lớn. Không hỏi để xác nhận defaults ít rủi ro.
+Ask only for information that cannot be inferred safely and materially changes the output.
 
-## 6. Capability audit
+## 8. Phase references
 
-Classify:
-
-- greenfield/near-greenfield vs existing repo;
-- single component vs monorepo;
-- existing navigation/knowledge/spec/state/verification/maintenance capabilities;
-- target agents/tool-specific instruction mechanisms;
-- current pain point và requested scope.
-
-Output một minimal change set. Không mặc định chạy mọi workflow.
-
-## 7. Inspection budgets
-
-### Map
-
-Read topology, entry points, representative flow, shared boundaries và representative tests. Stop khi mental model đủ trả lời “thing X ở đâu?” và dependency direction chính.
-
-### Specs
-
-Read user requirements/canonical docs trước, sau đó tests/code/evidence liên quan. Stop khi behavior, rules và uncertainties đủ để implementation/test không cần reverse-engineer nhiều layer.
-
-### Features
-
-Read requested requirements/specs và planned work only. Không inventory toàn bộ existing functionality.
-
-### Verify
-
-Read native commands, CI, tool configs, dependency graph và integration resource constraints. Không viết generic multi-language script chỉ từ manifest detection.
-
-### Garden
-
-Start structural/recent/focused; expand semantic sampling chỉ khi evidence cho thấy recurring drift.
-
-## 8. Output contract
-
-Mỗi invocation phải report ngắn:
-
-- reused artifacts/capabilities;
-- created or changed artifacts;
-- intentionally omitted capabilities;
-- uncertainty hoặc follow-up decision;
-- verification performed.
-
-Không đánh giá thành công bằng số file tạo.
-
-## 9. Mutation boundaries
-
-Skill MAY sửa artifact liên quan trực tiếp workflow đã chọn. Nó MUST:
-
-- inspect existing content;
-- preserve correct human-authored intent;
-- patch focused sections;
-- avoid unrelated rewrite;
-- honor dirty worktree changes;
-- ask before destructive/ambiguous broad overwrite.
-
-Garden cleanup được phép cross artifact boundaries trong explicit cleanup scope, theo repair policy.
-
-## 10. Rerun behavior
-
-Rerun cùng evidence SHOULD tạo no-op hoặc semantic minimal diff.
-
-MUST NOT:
-
-- tạo duplicate headings/links;
-- đổi stable feature IDs;
-- rename docs vô cớ;
-- reset human content;
-- recreate deleted optional artifacts không còn value;
-- oscillate wording giữa runs.
-
-Nếu merge intent không rõ, report conflict thay vì force consistency.
-
-## 11. Forbidden actions
-
-Skill MUST NOT:
-
-- generate full docs tree từ checklist;
-- claim architecture inferred chỉ từ manifests;
-- reverse-engineer existing app thành fake backlog;
-- add global progress log by default;
-- enforce one active feature globally;
-- create `doctor` mode;
-- duplicate native build system;
-- run semantic lint bằng regex;
-- auto-install dependencies hoặc mutate production resources;
-- broad-refactor code từ low-confidence garden finding.
-
-## 12. Bundled skill layout
-
-Planned implementation:
+The fallback/router skill references MUST mirror cognitive phases exactly:
 
 ```text
 skills/harness/
 ├── SKILL.md
-├── agents/
-│   └── openai.yaml
-├── references/
-│   ├── knowledge.md
-│   ├── work-model.md
-│   ├── verification.md
-│   └── gardening.md
-├── assets/
-│   └── templates/
-└── scripts/                  # only deterministic reusable tooling
+├── agents/openai.yaml
+└── references/
+    ├── map.md
+    ├── specs.md
+    ├── features.md
+    ├── verify.md
+    └── garden.md
 ```
 
-`SKILL.md` giữ classification, workflow và guardrails cốt lõi. Detailed contracts nằm một level trong `references/` và chỉ load khi cần.
+Do not merge `map` and `specs` into one generic knowledge reference. Each reference states inputs, inspection budget, stopping rule, workflow, mutation boundary và quality gate.
 
-Không bundle README/changelog/process notes vào installed skill.
+In modular distribution, each specialized skill remains independently usable. Packaging MUST avoid divergent duplicated rules; implementation should choose one canonical source/generation strategy before release.
 
-## 13. Quality gates
+## 9. Phase isolation protocol
 
-Before completion, evaluate only relevant gates:
+For each phase:
+
+```text
+declare phase and scope
+  -> load only phase reference
+  -> inspect phase-specific evidence
+  -> produce focused artifacts
+  -> validate phase quality gates
+  -> summarize outputs/uncertainties
+  -> unload/close concern before next phase
+```
+
+Cross-phase facts may be consumed as inputs, but later phases MUST read completed artifacts instead of re-deriving the same mental model.
+
+Examples:
+
+- specs read completed architecture routes but independently investigate behavior;
+- features read accepted specs instead of inferring product rules again;
+- verify reads topology/build tools, not feature prose, unless acceptance names required checks;
+- garden audits canonical artifacts without silently redefining them.
+
+## 10. Inspection budgets
+
+### Map
+
+Stop when a fresh agent can answer where entry points/modules live, what the main boundaries are and which doc to read next.
+
+### Specs
+
+Stop when expected behavior, edge cases and uncertainties are enough to derive implementation/tests without broad reverse-engineering.
+
+### Features
+
+Read requirements/specs and planned work only. Stop when feature outcomes, dependencies and acceptance are coherent.
+
+### Verify
+
+Read native commands, CI, tool configs, dependency graph and integration resource constraints. Stop before building a second dependency engine.
+
+### Garden
+
+Start structural/recent/focused; expand semantic sampling only when evidence shows recurring drift.
+
+## 11. Shared output contract
+
+Every invocation reports concisely:
+
+- reused artifacts/capabilities;
+- created or changed artifacts;
+- intentionally omitted capabilities;
+- uncertainty or follow-up decisions;
+- verification performed.
+
+Success is not measured by file count.
+
+## 12. Mutation and rerun rules
+
+Every skill MUST:
+
+- inspect existing content and dirty worktree;
+- preserve correct human-authored intent;
+- patch focused sections;
+- avoid unrelated rewrites;
+- keep stable feature IDs/names;
+- report ambiguous conflict instead of forcing consistency.
+
+Rerun with unchanged evidence SHOULD be a no-op or semantic minimal diff.
+
+## 13. Forbidden actions
+
+Harness skills MUST NOT:
+
+- generate a full docs tree from checklist;
+- infer architecture only from manifests;
+- reverse-engineer existing app into fake backlog;
+- add global progress log by default;
+- enforce one active feature globally;
+- duplicate native build/dependency systems;
+- automate semantic judgment with regex;
+- auto-install dependencies or mutate production resources;
+- broad-refactor code from low-confidence garden findings;
+- move to another cognitive phase before validating current outputs.
+
+## 14. Quality gates
 
 ### Shared
 
-- facts grounded hoặc uncertainty labeled;
+- facts grounded or uncertainty labeled;
 - artifact count justified;
 - links/commands valid;
 - no duplicate truth;
 - rerun-safe change;
-- task path không dài hơn cần thiết.
+- common task path remains short.
 
 ### Map
 
-- fresh agent locate entry points và relevant docs nhanh;
-- observed pattern không bị biến thành intended rule vô căn cứ.
+- fresh agent locates entry points and relevant docs quickly;
+- observed pattern is not promoted to rule without evidence.
 
 ### Specs
 
-- behavior đủ derive acceptance tests;
+- behavior can drive acceptance tests;
 - source/uncertainty visible;
-- implementation details không leak trừ architectural contract.
+- implementation detail does not leak unless it is a contract.
 
 ### Features
 
+- planned backlog or persistence need is explicit;
 - acceptance verifiable;
 - graph/state valid;
-- only planned/current work tracked;
-- handoff concise.
+- IDs stable and handoff concise.
 
 ### Verify
 
 - real commands run;
-- affected mapping conservative;
+- affected mapping conservative and bounded in complexity;
 - failures propagate;
 - adapter thin;
-- output compact.
+- output compact;
+- structural hygiene composed when relevant.
 
 ### Garden
 
-- findings evidence-based;
-- repair đúng scope;
-- semantic uncertainty không bị auto-resolve;
-- obsolete artifacts được remove khi safe.
+- structural checks deterministic;
+- semantic findings evidence-based;
+- repair scoped and verified;
+- obsolete artifacts removed only when safe.
 
-## 14. Skill implementation rule
+## 15. Implementation rule
 
-Script chỉ thêm khi deterministic task lặp lại, rẻ hơn và đáng tin hơn reasoning. Templates là starting points; skill phải adapt hoặc omit section thay vì copy placeholder nguyên xi.
+Script chỉ thêm khi deterministic task lặp lại, rẻ hơn và đáng tin hơn reasoning. Templates are starting points; each skill adapts or omits sections instead of copying placeholders unchanged.

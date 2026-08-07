@@ -25,7 +25,7 @@
 ## Verification
 
 - `<targeted command>`
-- `./init.sh affected`
+- `<affected verification command>`
 
 ## Handoff
 

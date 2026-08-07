@@ -9,7 +9,7 @@ Garden là workflow maintenance duy nhất của `harness`. Nó dọn entropy tr
 - verification adapters/config;
 - recurring code patterns có khả năng bị agent sao chép.
 
-Không có public `doctor` mode hoặc separate doctor ownership.
+Current interface dùng garden thay cho một public maintenance mode riêng trong verification.
 
 ## 2. One workflow, two engines
 
@@ -38,6 +38,8 @@ Agent audit theo evidence:
 - obsolete shim, flag hoặc API usage có evidence đủ mạnh.
 
 Structural result có thể deterministic. Semantic result phải phân biệt proven conflict với suspicion.
+
+**Structural invariant** là deterministic và MAY gate completion/CI. **Semantic finding** cần evidence + confidence và normally MUST NOT gate delivery tự động.
 
 ## 3. Triggers
 
@@ -117,11 +119,13 @@ Sau repair, chạy verification phù hợp với files/behavior đã đổi.
 
 ## 8. Structural tooling
 
-Nếu structural checks lặp lại và tạo value, skill MAY tạo:
+Khi target repository bật feature state hoặc có nhiều agent-facing docs/links, garden SHOULD cung cấp một deterministic structural entry point, ví dụ:
 
 ```text
 scripts/garden/check.*
 ```
+
+MAY omit helper nếu repo không có machine-checkable harness state hoặc native tooling đã cover cùng invariants.
 
 Script phải:
 
@@ -131,7 +135,7 @@ Script phải:
 - nonzero khi required invariant fail;
 - không pretend validate semantic correctness.
 
-Nó có thể được CI hoặc `init.sh full` gọi sau khi project chủ động promote check thành gate. Garden vẫn là owner của maintenance concern; verify chỉ compose command.
+Garden vẫn owns invariant/check. Verify compose nó vào feature completion, affected harness changes và full verification theo contract trong `05-VERIFICATION.md`.
 
 ## 9. Promotion ladder
 
@@ -150,8 +154,10 @@ Không promote style preference hoặc low-confidence heuristic thành gate.
 
 Garden SHOULD xem xét:
 
-- prune old `done` feature entries/details không còn operational value;
 - remove stale Handoff/blocker;
+- compact/remove low-value completed detail trước;
+- retain compact `done` index identity để tránh duplicate planning;
+- prune old identity chỉ khi retention policy cho phép và reliable history tồn tại;
 - delete empty placeholder docs;
 - merge duplicate facts về canonical home;
 - remove stale routing rows;

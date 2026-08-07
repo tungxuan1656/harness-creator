@@ -47,14 +47,22 @@ Ví dụ:
 
 | Artifact | Chỉ đáng tạo khi |
 |---|---|
-| `ARCHITECTURE.md` | Repo đủ lớn để orientation từ code tốn kém |
+| Architecture overview | Repo đủ lớn để orientation từ code tốn kém; target medium repo mặc định đã đạt ngưỡng này |
 | Subsystem doc | Pattern/boundary của subsystem khó suy ra hoặc hay bị làm sai |
 | Product spec | Business rule hoặc edge case không thể đoán an toàn |
-| Feature state | Work kéo dài, có dependency hoặc cần handoff |
+| Feature state | Project cần planned backlog hoặc work có dependency/handoff/persistence |
 | Verify helper | Existing tool không cung cấp agent-facing command đủ rõ |
 | Persistent garden report | Cleanup kéo dài qua nhiều phiên hoặc cần review riêng |
 
 Missing optional artifact tốt hơn placeholder hoặc generic prose.
+
+Với target 10k-200k LOC của corpus này:
+
+- agent instruction entry point (`AGENTS.md` hoặc equivalent) MUST tồn tại;
+- architecture overview (`ARCHITECTURE.md` hoặc existing equivalent) SHOULD tồn tại;
+- chỉ omit architecture overview khi repo thực sự trivial hoặc existing docs đã trả lời đủ topology, entry points và boundaries.
+
+Subsystem docs, specs, feature state và helper scripts vẫn hoàn toàn conditional.
 
 ## 5. Progressive disclosure
 

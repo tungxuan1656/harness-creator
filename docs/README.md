@@ -2,7 +2,7 @@
 
 ## Mục đích
 
-Bộ tài liệu này là nguồn thiết kế chuẩn để xây dựng **một skill `harness`**. Skill giúp AI coding agent thiết lập hoặc cải thiện bộ khung làm việc trong nhiều repository khác nhau.
+Bộ tài liệu này là nguồn thiết kế chuẩn để xây dựng **họ skill `harness-*` với một entry point `harness`**. Các skill giúp AI coding agent thiết lập hoặc cải thiện bộ khung làm việc trong nhiều repository khác nhau.
 
 Đối tượng mặc định:
 
@@ -35,20 +35,29 @@ AGENTS.md
 
 Không bắt task nhỏ tạo feature file, persistent plan, progress log hoặc chạy full suite nếu chúng không tạo giá trị.
 
-## Một skill, nhiều workflow
+## Hybrid skill architecture
 
-`harness` là public skill duy nhất. Sau khi inspect request và repository, skill chỉ chạy workflow cần thiết:
+Khi platform hỗ trợ cài nhiều skill, dùng router mỏng và các skill chuyên trách:
 
-| Workflow | Dùng khi | Artifact thường gặp |
+```text
+harness
+├── harness-map
+├── harness-specs
+├── harness-features
+├── harness-verify
+└── harness-garden
+```
+
+| Skill/phase | Dùng khi | Artifact thường gặp |
 |---|---|---|
-| `adopt` | Tạo hoặc nâng cấp harness | Điều phối các workflow cần thiết |
-| `map` | Agent khó tìm code hoặc hiểu boundaries | `AGENTS.md`, architecture/subsystem docs |
-| `specs` | Product/domain behavior khó suy ra an toàn | `docs/specs/*` |
-| `features` | Work đủ lớn để cần persistent scope/handoff | `feature_index.json`, `features/*` |
-| `verify` | Chuẩn hóa feedback loop | `init.sh`, `scripts/verify/*` khi cần |
-| `garden` | Dọn stale docs/state/code patterns | Structural scan, semantic audit, targeted repair |
+| `harness` | Adopt/upgrade và chọn phase | Capability audit, ordered execution |
+| `harness-map` | Agent khó tìm code hoặc hiểu boundaries | `AGENTS.md`, architecture/subsystem docs |
+| `harness-specs` | Product/domain behavior khó suy ra an toàn | Canonical repository-local specs |
+| `harness-features` | Project/work cần persistent backlog | `feature_index.json`, `features/*` |
+| `harness-verify` | Chuẩn hóa feedback loop | `init.sh`, `scripts/verify/*` khi cần |
+| `harness-garden` | Dọn stale docs/state/code patterns | Structural scan, semantic audit, targeted repair |
 
-Workflow không phải sub-skill và không cần cơ chế skill gọi skill.
+Nếu platform không compose được nhiều skill, `harness` dùng cùng workflow references nhưng MUST chạy từng phase độc lập: inspect, produce, validate và close phase trước khi chuyển concern khác.
 
 ## Tài liệu canonical
 
@@ -58,9 +67,10 @@ Workflow không phải sub-skill và không cần cơ chế skill gọi skill.
 4. `04-WORK_AND_FEATURE_MODEL.md` - task classes, feature state và handoff.
 5. `05-VERIFICATION.md` - `init.sh` adapter và verification contract.
 6. `06-GARDENING.md` - structural, semantic và cleanup workflow.
-7. `07-HARNESS_SKILL_SPEC.md` - contract của public skill.
+7. `07-HARNESS_SKILL_SPEC.md` - hybrid skill architecture và phase contracts.
 8. `08-WORKFLOWS.md` - end-to-end flows.
 9. `09-EVALS_AND_MIGRATION.md` - quality gates, evals và migration.
+10. `10-DESIGN_DECISIONS.md` - accepted decisions và rationale ngắn.
 
 Templates trong `templates/` là starting points, không phải scaffold bắt buộc.
 

@@ -48,17 +48,28 @@ MAY dùng dedicated execution plan nếu cần giữ decisions, rollout hoặc c
 
 Tạo `feature_index.json` và `features/*` khi ít nhất một điều đúng:
 
+- project có explicit repository-native planned backlog, đặc biệt sau greenfield requirements/spec decomposition;
 - work kéo dài qua nhiều phiên;
 - có execution dependencies;
 - nhiều người/agent cần thấy current scope;
 - acceptance đủ lớn để chat history không đáng tin;
 - resume cost đã trở thành vấn đề.
 
-Không tạo backlog repo-local chỉ vì harness có template.
+Một planned feature thuộc project backlog MAY được track dù riêng feature đó dự kiến hoàn thành trong một session. Backlog trong trường hợp này là project memory, không chỉ session memory.
+
+```text
+Ad-hoc one-session task
+  -> không cần feature artifact
+
+Planned feature thuộc repository-native backlog
+  -> MAY track dù execution chỉ một session
+```
+
+Không tạo backlog repo-local chỉ vì harness có template hoặc external tracker đã cung cấp execution context đầy đủ.
 
 ## 3. Execution index
 
-Index chỉ giữ planned/current execution truth:
+Index giữ planned/current execution truth và MAY giữ compact identity của completed features:
 
 - `id`;
 - `title`;
@@ -148,13 +159,14 @@ Khi feature hoàn tất, remove stale Handoff hoặc giữ một completion note
 
 ## 9. Completed feature retention
 
-`done` là trạng thái chuyển tiếp, không phải archive vô hạn.
+`done` không nên giữ detail/handoff rác vô hạn, nhưng compact feature identity có giá trị chống duplicate planning.
 
 Default cho team nhỏ:
 
-- giữ done entry trong thời gian ngắn nếu đang review/release;
-- garden prune entry/detail không còn operational value;
-- git và external tracker giữ history;
+- remove stale Handoff/blocker khi completion;
+- compact hoặc remove detail trước nếu nó không còn durable value;
+- giữ compact index entry lâu hơn để agent biết feature đã tồn tại và hoàn thành;
+- chỉ prune old done identity sau milestone/release hoặc khi index thực sự lớn và external/git history đáng tin;
 - không tạo `features/archive/` mặc định.
 
 Repo MAY chọn retention khác, nhưng phải ghi rõ và tránh index phình vô hạn.

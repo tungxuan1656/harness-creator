@@ -111,11 +111,25 @@ Doc khác MAY:
 - restate một câu để route;
 - summarize invariant mà mọi task thực sự cần.
 
-Không copy nguyên section. Link phải dẫn theo một chiều dễ hiểu:
+Không copy nguyên section. Architecture, specs và feature state là peer truth branches, không phải một chuỗi derivation:
 
 ```text
-instructions -> architecture/subsystem -> spec -> code/tests
+                    AGENTS.md
+                       |
+          +------------+------------+
+          |            |            |
+          v            v            v
+   Architecture      Specs     Feature state
+          |            |            |
+          v            |            |
+   Subsystem docs      |            |
+          \             |           /
+           +------------+----------+
+                       v
+                  Code + tests
 ```
+
+Feature detail chủ yếu route tới relevant spec, architecture/subsystem docs, acceptance và verification. Product behavior không nằm “dưới” architecture.
 
 ## 8. Mutation and rerun protocol
 

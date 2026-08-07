@@ -36,6 +36,7 @@ Test prompts that SHOULD trigger:
 
 - “setup this repo for coding agents”;
 - “agents keep reading the wrong modules”;
+- “turn these greenfield requirements into a repository backlog”;
 - “create a fast affected verification command”;
 - “clean stale harness docs and feature state”;
 - “migrate harness-slim”.
@@ -47,7 +48,12 @@ Test prompts that SHOULD NOT trigger:
 - product planning unrelated to repository execution;
 - model/prompt selection.
 
-Also verify classification selects only needed internal workflows.
+Also verify:
+
+- router selects only needed phases;
+- specialist prompt triggers the matching skill without router ceremony;
+- fallback profile loads one phase reference at a time;
+- map/specs/features/verify reasoning does not bleed across unfinished phases.
 
 ## 4. Workflow evals
 
@@ -69,10 +75,11 @@ Also verify classification selects only needed internal workflows.
 ### Features
 
 - decomposition coherent;
+- greenfield planned backlog is created even when individual features are one-session sized;
 - acceptance verifiable;
 - IDs stable on rerun;
 - no fake backlog for existing functionality;
-- completed state can be pruned safely.
+- stale done detail is compacted before feature identity is pruned.
 
 ### Verify
 
@@ -80,8 +87,10 @@ Also verify classification selects only needed internal workflows.
 - shared changes include reverse dependencies;
 - uncertainty widens;
 - native tooling reused;
+- affected mapping falls back before becoming a second dependency engine;
 - parallel jobs safe;
-- output compact and failures propagate.
+- output compact and failures propagate;
+- harness/docs/state changes compose structural garden checks.
 
 ### Garden
 
@@ -146,15 +155,17 @@ Remove old assumptions:
 6. Run structural garden and relevant verification.
 7. Keep `harness-slim` name as a temporary compatibility alias only if distribution requires it.
 
-## 9. Release gate for the new skill
+## 9. Release gate for the new skills
 
-Before implementing/releasing `harness`:
+Before implementing/releasing the hybrid distribution:
 
-- single-skill trigger/classification contract passes evals;
-- references use progressive disclosure;
-- no bootstrap sub-skill invocation assumption;
-- no doctor mode remains;
+- router and specialist trigger contracts pass evals;
+- router references mirror `map/specs/features/verify/garden`;
+- modular profile works when composition is supported;
+- fallback profile enforces phase isolation without assuming skill invocation;
+- maintenance interface matches current design decision in `10-DESIGN_DECISIONS.md`;
 - init adapter fixtures cover simple and complex repos;
+- feature completion and relevant affected/full flows run structural hygiene checks;
 - rerun/dirty-worktree safety passes;
 - target task flows remain shorter than the old harness for Class A/B work;
 - end-to-end benchmark shows no speed regression from added process.

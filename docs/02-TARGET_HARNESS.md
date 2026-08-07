@@ -18,17 +18,15 @@ NAVIGATE -> UNDERSTAND -> FOCUS -> VERIFY -> MAINTAIN
 
 ## 2. Adaptive artifact set
 
-Một repo trung bình thường có:
+Một repo trung bình thường có instruction entry point và architecture overview; verification adapter chỉ xuất hiện khi native interface chưa đủ rõ:
 
 ```text
 repo/
 ├── AGENTS.md
 ├── ARCHITECTURE.md
-├── init.sh
 ├── docs/
 │   └── README.md
-└── scripts/
-    └── verify/             # conditional
+└── init.sh                 # conditional adapter
 ```
 
 Chỉ thêm khi có nhu cầu:
@@ -36,9 +34,10 @@ Chỉ thêm khi có nhu cầu:
 ```text
 docs/<SUBSYSTEM>.md         # subsystem phức tạp hoặc conventions riêng
 docs/specs/*                # domain/product behavior
-feature_index.json          # planned/current multi-step work
+feature_index.json          # planned backlog or persistent work
 features/*                  # scope, acceptance, handoff
 scripts/garden/*            # recurring deterministic maintenance checks
+scripts/verify/*            # complex verification orchestration
 ```
 
 Không có target tree duy nhất cho mọi repo.
@@ -62,6 +61,8 @@ ARCHITECTURE.md hoặc existing equivalent
 docs/README.md nếu có nhiều doc
 init.sh hoặc existing stable verify command
 ```
+
+`AGENTS.md` hoặc equivalent là required capability. Architecture overview SHOULD tồn tại cho target medium repo, trừ khi repo trivial hoặc existing docs đã làm đúng chức năng đó.
 
 ### Domain-heavy or multi-session work
 

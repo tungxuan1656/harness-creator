@@ -93,8 +93,11 @@ acceptance satisfied
   -> proportional verification
   -> remove stale Handoff/blocker
   -> mark done
+  -> cheap structural feature/harness check
   -> update canonical docs only if impacted
 ```
+
+Không claim completion nếu structural check sau state update fail.
 
 ## 6. Team concurrency
 
@@ -112,6 +115,7 @@ During implementation:
 
 - use targeted native tests for tight feedback;
 - run `affected` after coherent local change;
+- include garden-owned structural check when harness/docs/feature state changed;
 - widen for shared contracts/config/public interfaces;
 - use `full` according to risk or merge convention.
 
