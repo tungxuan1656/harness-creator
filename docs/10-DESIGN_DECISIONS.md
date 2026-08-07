@@ -77,3 +77,15 @@ Specs/architecture describe intended or proposed truth; code/tests/runtime provi
 **Status:** Accepted
 
 On completion, remove stale Handoff and compact low-value detail first. Keep compact done index identity longer to prevent duplicate planning; prune identity only when index cost is real and reliable history exists elsewhere.
+
+## D013 - Specialists may make minimal integration writes
+
+**Status:** Accepted
+
+A specialist owns primary generation and rerun behavior but may patch another specialist's routing artifact only to expose the capability it created or repaired. Integration writes must remain minimal and must not redesign the owning artifact.
+
+## D014 - Feature selection remains external in v1
+
+**Status:** Accepted
+
+User/task assignment or an existing external queue chooses work. Dependencies constrain eligibility, but feature index array order does not imply priority or select the next feature. A rank field must earn its cost through evaluation before it is added.

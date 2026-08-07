@@ -52,6 +52,7 @@ Also verify that:
 
 - the router selects only needed phases;
 - a specialist prompt triggers the matching skill without router ceremony;
+- direct specialist invocation leaves a newly created capability discoverable through only the required integration patch;
 - the fallback profile loads one phase reference at a time;
 - map/specs/features/verify reasoning does not bleed across unfinished phases.
 
@@ -77,6 +78,10 @@ Also verify that:
 - decomposition is coherent;
 - greenfield planned backlog is created even when individual features are one-session sized;
 - acceptance is verifiable;
+- array order is never treated as priority or as the canonical next-feature selection;
+- dependencies constrain eligibility without choosing between eligible features;
+- accepted completion exceptions are recorded in feature detail with their authority and follow-up when relevant;
+- accepted exceptions survive completed-detail retention or are moved to a durable canonical home before compaction;
 - IDs are stable on rerun;
 - existing functionality is not turned into a fake backlog;
 - stale done detail is compacted before feature identity is pruned.
@@ -160,6 +165,7 @@ Remove old assumptions:
 Before implementing/releasing the hybrid distribution:
 
 - router and specialist trigger contracts pass evals;
+- specialist integration writes expose new capabilities without redesigning another skill's primary artifact;
 - router references mirror `map/specs/features/verify/garden`;
 - the modular profile works when composition is supported;
 - the fallback profile enforces phase isolation without assuming skill invocation;

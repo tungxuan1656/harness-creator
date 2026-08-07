@@ -95,7 +95,37 @@ Use to audit/clean stale instructions, docs, feature state, verification adapter
 
 Owns structural maintenance checks and semantic gardening. Structural invariants may gate; semantic findings normally do not.
 
-## 6. Trigger boundaries
+## 6. Cross-skill integration
+
+Specialist ownership governs primary generation and rerun behavior; it is not an exclusive-write boundary. A specialist MAY make the smallest integration patch needed to expose a capability through an artifact stewarded by another skill.
+
+| Skill | Primary writes | Integration writes allowed |
+|---|---|---|
+| `harness-map` | Instruction routing, architecture overview, docs index, subsystem guides | None; routing artifacts are already primary writes |
+| `harness-specs` | Canonical repository-local specs | Docs index or a minimal instruction route to the new spec area |
+| `harness-features` | Feature index, feature details, and feature schema behavior | Minimal instruction route to feature state |
+| `harness-verify` | `init.sh` and verification helpers/configuration | Agent instruction verification commands |
+| `harness-garden` | Structural maintenance tooling and scoped findings/repairs | Any affected canonical artifact when cleanup is authorized |
+
+An integration patch:
+
+- MUST only make the new capability discoverable or apply Garden's authorized scoped repair;
+- MUST preserve the owning artifact's structure, style, human-authored intent, and unrelated dirty changes;
+- MUST NOT redesign, broadly clean, or assume generation ownership of the other skill's artifact;
+- MUST validate the added route, path, or command in the same invocation;
+- MUST stop and report the required owning-skill follow-up when discoverability cannot be added without resolving ambiguous intent or redesigning the artifact.
+
+An integration write is part of the current specialist's completion gate. It does not open another cognitive phase or require invoking the owning specialist.
+
+Examples:
+
+- Verify creates `./init.sh affected`, then patches the existing instruction router's verification command when needed.
+- Specs creates `docs/specs/auth.md`, then adds one route to the existing docs index when needed.
+- Features enables `feature_index.json`, then adds one feature-state route to the existing instruction entry point when needed.
+
+This contract keeps independently invoked specialists useful without allowing cross-skill scope expansion.
+
+## 7. Trigger boundaries
 
 Harness skills SHOULD trigger for:
 
@@ -117,7 +147,7 @@ They SHOULD NOT trigger for:
 
 Specialist metadata descriptions must name positive triggers and meaningful exclusions to reduce collisions.
 
-## 7. Shared first move
+## 8. Shared first move
 
 Inspect before asking or creating:
 
@@ -132,7 +162,7 @@ Inspect before asking or creating:
 
 Ask only for information that cannot be inferred safely and materially changes the output.
 
-## 8. Phase references
+## 9. Phase references
 
 Fallback/router references MUST mirror the cognitive phases exactly:
 
@@ -152,7 +182,7 @@ Do not merge `map` and `specs` into one generic knowledge reference. Each refere
 
 In modular distribution, each specialist skill remains independently usable. Packaging MUST avoid divergent duplicated rules; implementation must choose one canonical source or generation strategy before release.
 
-## 9. Phase isolation protocol
+## 10. Phase isolation protocol
 
 For each phase:
 
@@ -175,7 +205,7 @@ Examples:
 - verify reads topology/build tools, not feature prose, unless acceptance names required checks;
 - garden audits canonical artifacts without silently redefining them.
 
-## 10. Inspection budgets
+## 11. Inspection budgets
 
 ### Map
 
@@ -197,7 +227,7 @@ Read native commands, CI, tool configs, dependency graph, and integration resour
 
 Start structural/recent/focused; expand semantic sampling only when evidence shows recurring drift.
 
-## 11. Shared output contract
+## 12. Shared output contract
 
 Every invocation reports concisely:
 
@@ -209,7 +239,7 @@ Every invocation reports concisely:
 
 Success is not measured by file count.
 
-## 12. Mutation and rerun rules
+## 13. Mutation and rerun rules
 
 Every skill MUST:
 
@@ -222,7 +252,7 @@ Every skill MUST:
 
 Rerunning with unchanged evidence SHOULD be a no-op or a semantic minimal diff.
 
-## 13. Forbidden actions
+## 14. Forbidden actions
 
 Harness skills MUST NOT:
 
@@ -237,13 +267,14 @@ Harness skills MUST NOT:
 - broad-refactor code from low-confidence garden findings;
 - move to another cognitive phase before validating the current outputs.
 
-## 14. Quality gates
+## 15. Quality gates
 
 ### Shared
 
 - facts are grounded or uncertainty is labeled;
 - artifact count is justified;
 - links/commands are valid;
+- newly created capabilities are discoverable through minimal integration routes;
 - truth is not duplicated;
 - rerun is safe;
 - the common task path stays short.
@@ -264,6 +295,8 @@ Harness skills MUST NOT:
 - a planned backlog or persistence need is explicit;
 - acceptance is verifiable;
 - graph/state is valid;
+- array order is not treated as priority or selection order;
+- accepted completion exceptions are recorded in feature detail;
 - IDs are stable and handoff is concise.
 
 ### Verify
@@ -282,6 +315,6 @@ Harness skills MUST NOT:
 - repairs are scoped and verified;
 - obsolete artifacts are removed only when safe.
 
-## 15. Implementation rule
+## 16. Implementation rule
 
 Add scripts only for deterministic, repeated tasks where they are cheaper and more reliable than reasoning. Templates are starting points; each skill adapts or omits sections instead of copying placeholders unchanged.

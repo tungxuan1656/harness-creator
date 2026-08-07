@@ -27,6 +27,14 @@
 - `<targeted command>`
 - `<affected verification command>`
 
+## Accepted exceptions
+
+<!-- Include only when completion intentionally leaves an acceptance or
+verification exception. State who/what accepted it and the follow-up reference
+when relevant. -->
+
+- `<exception>` - `<reason / acceptance source / follow-up>`
+
 ## Handoff
 
 <!-- Include only when stopping before completion. Remove stale Handoff when done. -->

@@ -38,7 +38,7 @@
 
 - Read the relevant feature detail and linked specs.
 - Focus on one primary task per session; other features may remain in progress.
-- Mark done only after acceptance and relevant verification.
+- Mark done only when every acceptance and required verification item is satisfied or covered by a recorded accepted exception.
 - Leave a concise Handoff only when stopping before completion.
 
 ## Verification

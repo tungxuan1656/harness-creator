@@ -155,6 +155,7 @@ Do not promote style preferences or low-confidence heuristics into gates.
 Garden SHOULD consider:
 
 - removing stale Handoff/blocker;
+- preserving recorded accepted exceptions or moving them to a durable canonical home before compacting/removing detail;
 - compacting or removing low-value completed detail first;
 - retaining compact `done` index identity to prevent duplicate planning;
 - pruning old identity only when the retention policy allows and reliable history exists;

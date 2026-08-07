@@ -103,6 +103,8 @@ Sources / uncertainties
 
 Skill ownership controls generation and rerun behavior. It MUST NOT prevent a feature from updating a canonical doc that the feature changes.
 
+Specialist skills may also make minimal discoverability patches outside their primary artifacts according to the [cross-skill integration contract](07-HARNESS_SKILL_SPEC.md#6-cross-skill-integration).
+
 ## 7. One fact, one canonical home
 
 Other docs MAY:

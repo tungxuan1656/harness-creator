@@ -12,6 +12,7 @@
       "const": 1
     },
     "features": {
+      "description": "Feature records. Array order does not imply priority, rank, or execution order.",
       "type": "array",
       "items": {
         "type": "object",

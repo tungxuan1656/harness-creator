@@ -74,7 +74,7 @@ Do not create persistent feature artifacts when the task should finish in one se
 
 At start:
 
-1. identify the primary feature from user/task context;
+1. identify the primary feature from explicit user/task assignment or the repository's external selection convention; never infer priority from feature index order;
 2. read its detail and linked docs;
 3. inspect recent code/history as needed;
 4. run a baseline quick/targeted check only when useful.
@@ -89,8 +89,10 @@ Before stopping:
 At completion:
 
 ```text
-acceptance satisfied
-  -> proportional verification
+acceptance reviewed
+  -> proportional verification performed
+  -> record any accepted exceptions
+  -> confirm every acceptance/check is satisfied or covered
   -> remove stale Handoff/blocker
   -> mark done
   -> cheap structural feature/harness check
@@ -103,6 +105,7 @@ Do not claim completion if the structural check after the state update fails.
 
 - Multiple `in_progress` features are allowed.
 - User/task assignment determines primary work.
+- Dependencies determine eligibility, not priority; array order does not select the next feature.
 - An agent MUST NOT take over a feature merely because it sees the status.
 - Existing branch/worktree conventions handle code isolation.
 - Harness does not add locks or leases.
