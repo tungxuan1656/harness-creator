@@ -1,0 +1,58 @@
+{
+  "skill_name": "harness-specs",
+  "evals": [
+    {
+      "id": 1,
+      "name": "Trigger - Specify permission and state behavior",
+      "prompt": "Create a durable repository-local spec for invitation acceptance. Requirements define actor permissions and expiry, while retries and duplicate acceptance are easy to misread.",
+      "expected_output": "One focused, testable behavior spec with provenance, state transitions, edge cases, and a minimal discoverability route.",
+      "files": ["evals/fixtures/auth-conflict-repo.md"],
+      "tags": ["trigger-positive", "workflow"],
+      "expectations": [
+        "Grounds normative rules in requirements or accepted decisions",
+        "Keeps code and tests labeled as observed evidence",
+        "Derives normal, failure, and material edge assertions as a review probe",
+        "Does not leak architecture, feature planning, or implementation detail into the spec"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Workflow - Preserve a core code and spec conflict",
+      "prompt": "The canonical auth requirement says revoked tokens return 401, but current tests and code return 403. Repair the spec only if authority is clear and report the remaining mismatch.",
+      "expected_output": "A precise conflict classification with no silent normalization or implementation edits.",
+      "files": ["evals/fixtures/auth-conflict-repo.md"],
+      "tags": ["trigger-positive", "workflow", "dirty-worktree"],
+      "expectations": [
+        "States both claims and their evidence",
+        "Preserves unrelated dirty implementation changes",
+        "Does not treat passing tests as intended truth",
+        "Reports the concrete code or test follow-up without editing those files"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Rerun - Keep human-authored rationale stable",
+      "prompt": "Run harness-specs again with unchanged requirements and code after a human clarified rationale in the canonical spec.",
+      "expected_output": "A no-op that preserves the human clarification and stable anchors.",
+      "files": [],
+      "tags": ["trigger-positive", "rerun"],
+      "expectations": [
+        "Produces no semantic or formatting-only diff",
+        "Does not recreate an intentionally removed optional section",
+        "Preserves repository terminology and human-authored rationale"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "No trigger - Obvious CRUD implementation",
+      "prompt": "Add a conventional admin-only CRUD endpoint whose behavior is already explicit in the current API contract and tests.",
+      "expected_output": "harness-specs should not trigger or should make an evidence-backed no-op if explicitly invoked.",
+      "files": [],
+      "tags": ["trigger-negative"],
+      "expectations": [
+        "Creates no parallel endpoint-by-endpoint spec",
+        "Does not duplicate the existing API contract"
+      ]
+    }
+  ]
+}

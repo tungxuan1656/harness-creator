@@ -1,0 +1,58 @@
+{
+  "skill_name": "harness-features",
+  "evals": [
+    {
+      "id": 1,
+      "name": "Trigger - Decompose an accepted greenfield backlog",
+      "prompt": "Turn these accepted greenfield requirements into a repository-native backlog. Some slices fit one session, but the planned backlog must persist across the project.",
+      "expected_output": "A compact v1 feature index and coherent feature details with stable IDs, real dependencies, and observable acceptance.",
+      "files": ["evals/fixtures/feature-state-repo.md"],
+      "tags": ["trigger-positive", "workflow"],
+      "expectations": [
+        "Tracks planned one-session slices because the backlog itself is project memory",
+        "Uses dependencies only for execution prerequisites and never as priority",
+        "Does not automatically choose or promote one eligible feature",
+        "Adds only one minimal instruction route to feature state"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Workflow - Maintain concurrent lifecycle truth",
+      "prompt": "Two features are genuinely in progress. Complete one whose Safari check has an accepted exception, keep the other in progress, and report eligible todo candidates without selecting one.",
+      "expected_output": "Truthful concurrent statuses, a durable accepted exception, cleaned completion state, and no inferred priority.",
+      "files": ["evals/fixtures/feature-state-repo.md"],
+      "tags": ["trigger-positive", "workflow", "dirty-worktree"],
+      "expectations": [
+        "Allows multiple in_progress records and treats status as non-ownership",
+        "Records the unmet check, reason, accepting authority, and follow-up in feature detail",
+        "Removes stale Handoff and blocker before marking done",
+        "Preserves unrelated dirty code and runs or directly performs structural state validation"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Rerun - Preserve IDs and completed exceptions",
+      "prompt": "Rerun feature maintenance with unchanged planned work after a human edited acceptance wording and retained a still-relevant completion exception.",
+      "expected_output": "A semantic no-op that preserves stable IDs, acceptance, exception authority, and external references.",
+      "files": ["evals/fixtures/feature-state-repo.md"],
+      "tags": ["trigger-positive", "rerun"],
+      "expectations": [
+        "Does not rename IDs or reorder entries to imply priority",
+        "Does not delete the accepted exception during completed-detail compaction",
+        "Does not recreate an intentionally removed optional progress artifact"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "No trigger - Clear ad-hoc task with sufficient tracker",
+      "prompt": "Fix this one-session bug. The assigned external issue already contains scope, acceptance, and handoff, and no repository backlog exists.",
+      "expected_output": "harness-features should not trigger or should make an evidence-backed no-op.",
+      "files": [],
+      "tags": ["trigger-negative"],
+      "expectations": [
+        "Creates no feature_index.json or feature detail",
+        "Does not mirror tracker metadata or reverse-engineer existing functionality"
+      ]
+    }
+  ]
+}

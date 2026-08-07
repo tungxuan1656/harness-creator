@@ -1,0 +1,58 @@
+{
+  "skill_name": "harness-router",
+  "evals": [
+    {
+      "id": 1,
+      "name": "Trigger - Adopt only missing capabilities",
+      "prompt": "Set up this existing repository for coding agents. Navigation is weak and checks are fragmented, but product behavior is already documented and all work is one-session.",
+      "expected_output": "A capability audit selecting only map and verify, completed and validated one phase at a time.",
+      "files": ["evals/fixtures/adoption-repo.md"],
+      "tags": ["trigger-positive", "workflow"],
+      "expectations": [
+        "Reuses product specs and omits feature state and garden",
+        "Completes and validates map before verify",
+        "Uses specialists when composable and one generated fallback reference otherwise",
+        "Reports reused, changed, omitted, uncertain, and verified capabilities"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Workflow - Migrate legacy harness with dirty work",
+      "prompt": "Migrate this harness-slim repository to the hybrid model while preserving project-specific rules and unrelated unstaged code.",
+      "expected_output": "An ordered migration that removes legacy assumptions only after their canonical replacements are validated.",
+      "files": ["evals/fixtures/adoption-repo.md"],
+      "tags": ["trigger-positive", "workflow", "dirty-worktree"],
+      "expectations": [
+        "Preserves unrelated dirty code and human-authored rules",
+        "Does not preserve one-active, priority-by-array, mandatory diary, Bash-plus-jq, giant adapter, or doctor assumptions",
+        "Moves through isolated phases and validates integration routes before removal",
+        "Does not generate the full target tree from a checklist"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Rerun - No-op on a complete harness",
+      "prompt": "Audit the repository-wide harness again after no capability, source, command, or requirement changes.",
+      "expected_output": "A concise evidence-backed no-op with no specialist phase selected for mutation.",
+      "files": [],
+      "tags": ["trigger-positive", "rerun"],
+      "expectations": [
+        "Does not recreate intentionally omitted optional capabilities",
+        "Does not normalize unrelated prose or rerun every phase",
+        "Reports the final route and command sanity evidence"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "No trigger - Single specialist concern",
+      "prompt": "Agents cannot find the API entry point, but every other harness capability is sufficient. Repair repository navigation.",
+      "expected_output": "harness-router should not trigger; the request should route directly to harness-map.",
+      "files": [],
+      "tags": ["trigger-negative"],
+      "expectations": [
+        "Avoids router ceremony for one focused specialist concern",
+        "Does not select specs, features, verify, or garden"
+      ]
+    }
+  ]
+}

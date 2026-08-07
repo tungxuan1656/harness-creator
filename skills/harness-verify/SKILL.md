@@ -162,7 +162,10 @@ Define changed files explicitly for each environment:
 Document the chosen explicit-scope mechanism instead of inventing a universal
 flag syntax. Deduplicate overlapping sources. Parse paths as data, preserve
 spaces and metacharacters, and prefer NUL-delimited machine output where the
-tool supports it. Never execute a path or caller value through unsafe `eval`.
+tool supports it. Resolve explicit paths against the documented caller
+directory, normalize them, and reject any path that escapes the repository
+before mapping or dispatch. Preserve deleted paths when the explicit or git
+scope names them. Never execute a path or caller value through unsafe `eval`.
 
 Do not use one ambiguous `git diff` form for local changes, committed branch
 changes, and CI. State exactly what each path covers and what makes it widen.
@@ -387,6 +390,8 @@ Require all applicable gates:
 - Invalid input fails with concise actionable usage.
 - Local affected discovery covers staged, unstaged, and untracked paths.
 - CI/base behavior is explicit; rename/delete and shared changes widen correctly.
+- Explicit paths resolve from the documented caller directory; repository
+  escapes fail before any check runs.
 - Unknown paths take the conservative fallback.
 - Native affected tooling is reused, or custom mapping remains small and
   evidence-backed.
@@ -402,10 +407,11 @@ Require all applicable gates:
 
 For executable adapters or helpers, run syntax/static checks and direct
 behavior tests. Exercise success, required failure, invalid mode, invocation
-from a nested directory, path whitespace, affected widening, and structural
-composition when those behaviors exist. Use a disposable git fixture for
-changed-file cases when practical. Run actual repository commands in
-proportion to risk, and state clearly which native gates were not run.
+from a nested directory, path whitespace, repository-escape rejection,
+affected widening, and structural composition when those behaviors exist. Use
+a disposable git fixture for changed-file cases when practical. Run actual
+repository commands in proportion to risk, and state clearly which native
+gates were not run.
 
 Never infer correctness from reading the script or from a subagent report.
 Inspect command output and exit status before making a passing claim.

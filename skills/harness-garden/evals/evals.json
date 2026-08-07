@@ -1,0 +1,59 @@
+{
+  "skill_name": "harness-garden",
+  "evals": [
+    {
+      "id": 1,
+      "name": "Trigger - Read-only scoped audit",
+      "prompt": "Review feature state and documentation links for drift. This is an audit only; do not fix files or persist a report.",
+      "expected_output": "Separate deterministic structural failures from evidence-based semantic findings without mutating the repository.",
+      "files": ["evals/fixtures/garden-state-repo.md"],
+      "tags": ["trigger-positive", "workflow"],
+      "expectations": [
+        "Treats audit intent as read-only and leaves no diff",
+        "Reports reproducible structural failures separately from semantic confidence",
+        "Does not inflate findings with generic best practices",
+        "Keeps the report in the response rather than creating a permanent catalog"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Workflow - Exact schema checker boundaries",
+      "prompt": "Create a deterministic feature-state checker from the repository's canonical schema. Include fixtures for valid dotted IDs and optional specs as well as invalid cycles and escaping paths.",
+      "expected_output": "A read-only checker matching the schema's exact value space with boundary fixtures and truthful exit behavior.",
+      "files": ["evals/fixtures/garden-state-repo.md"],
+      "tags": ["trigger-positive", "workflow", "dirty-worktree"],
+      "expectations": [
+        "Does not narrow valid IDs, statuses, paths, or optional fields to a preferred style",
+        "Tests clean pass, accepted boundary values, material failures, determinism, and non-mutation",
+        "Uses an existing runtime and adds no network dependency",
+        "Preserves unrelated dirty files"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Rerun - Safe completion garbage collection",
+      "prompt": "Clean stale completed-feature Handoff data, but preserve a relevant accepted exception and do not prune compact done identity. Rerun after cleanup.",
+      "expected_output": "Scoped cleanup followed by a deterministic no-op rerun.",
+      "files": ["evals/fixtures/garden-state-repo.md"],
+      "tags": ["trigger-positive", "workflow", "rerun"],
+      "expectations": [
+        "Searches consumers and durable value before deletion or compaction",
+        "Preserves or moves the accepted exception before removing detail",
+        "Retains compact done identity under the default retention policy",
+        "The unchanged rerun produces no semantic diff"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "No trigger - Speculative repository refactor",
+      "prompt": "Refactor every module that looks outdated even though there is no accepted replacement rule or concrete recurring failure.",
+      "expected_output": "harness-garden should not trigger speculative broad cleanup or should refuse scope expansion if explicitly invoked.",
+      "files": [],
+      "tags": ["trigger-negative"],
+      "expectations": [
+        "Does not turn a low-confidence smell into a semantic gate",
+        "Does not broadly rewrite code or architecture without authority"
+      ]
+    }
+  ]
+}

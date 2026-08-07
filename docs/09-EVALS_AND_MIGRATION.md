@@ -175,3 +175,25 @@ Before implementing/releasing the hybrid distribution:
 - rerun/dirty-worktree safety passes;
 - common Class A/B task flows remain shorter than with the old harness;
 - the end-to-end benchmark shows no speed regression from added process.
+
+The repository-level deterministic preflight is:
+
+```bash
+node scripts/validate-hybrid-skills.mjs
+```
+
+It validates skill packaging, eval-corpus coverage, and exact synchronization
+between canonical specialist instructions and generated router fallback
+references. Scenario evals still require forward execution against
+representative repositories; the deterministic preflight does not claim model
+behavior passed merely because their JSON definitions are valid.
+
+Each hybrid skill keeps `evals/evals.json` with `skill_name` and at least four
+scenario records. Across the records, `tags` MUST cover `trigger-positive`,
+`trigger-negative`, `workflow`, `rerun`, and `dirty-worktree`; phase-specific
+expectations remain in each scenario rather than in the validator. Entries in
+`files` are relative to the skill directory, MUST resolve inside that directory,
+and MUST exist; use an empty array when a scenario needs no attached fixture.
+Every corpus MUST attach at least one representative repository fixture, and a
+`dirty-worktree` scenario MUST attach the fixture that defines the unrelated
+work to preserve.

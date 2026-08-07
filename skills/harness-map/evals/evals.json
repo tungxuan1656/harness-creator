@@ -1,0 +1,58 @@
+{
+  "skill_name": "harness-map",
+  "evals": [
+    {
+      "id": 1,
+      "name": "Trigger - Map an unfamiliar medium repository",
+      "prompt": "Agents keep editing the wrong package in this existing monorepo. Inspect it and repair the repository navigation without changing product behavior.",
+      "expected_output": "A minimal evidence-grounded instruction router and architecture route, reusing useful existing documentation.",
+      "files": ["evals/fixtures/stale-route-repo.md"],
+      "tags": ["trigger-positive", "workflow"],
+      "expectations": [
+        "Inspects real entry points, representative flows, tests, nested instructions, and git state before writing",
+        "Creates only mapping artifacts that prevent a demonstrated navigation failure",
+        "Labels observed, intended, proposed, and uncertain boundaries where authority differs",
+        "Does not create specs, feature state, verification orchestration, or broad cleanup"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Workflow - Repair one stale route with dirty files",
+      "prompt": "The backend package moved from services/api to apps/api and AGENTS.md still points to the old path. Fix only the affected navigation routes; I have unrelated unstaged UI work.",
+      "expected_output": "Focused route repairs that preserve unrelated dirty work and validate every changed path.",
+      "files": ["evals/fixtures/stale-route-repo.md"],
+      "tags": ["trigger-positive", "workflow", "dirty-worktree"],
+      "expectations": [
+        "Reads git status and leaves unrelated UI changes untouched",
+        "Updates the canonical route before removing the stale route",
+        "Does not rewrite the whole instruction file for uniformity",
+        "Reports path and link validation actually performed"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Rerun - Preserve a sufficient existing map",
+      "prompt": "Run harness-map again after no repository topology or documentation changes.",
+      "expected_output": "An evidence-backed no-op with no semantic diff.",
+      "files": [],
+      "tags": ["trigger-positive", "rerun"],
+      "expectations": [
+        "Reuses the current instruction router and architecture overview",
+        "Does not recreate intentionally omitted optional subsystem documents",
+        "Produces no formatting-only or placeholder changes"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "No trigger - Ordinary focused bug fix",
+      "prompt": "Fix the off-by-one error in src/pagination.ts; the repository routes and relevant tests are already clear.",
+      "expected_output": "harness-map should not trigger; if explicitly invoked, it should report that no navigation problem justifies mapping changes.",
+      "files": [],
+      "tags": ["trigger-negative"],
+      "expectations": [
+        "Creates no AGENTS.md, architecture overview, docs index, or subsystem guide",
+        "Does not turn the bug fix into a repository-wide audit"
+      ]
+    }
+  ]
+}

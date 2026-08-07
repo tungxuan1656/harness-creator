@@ -301,6 +301,11 @@ each material failure class, invalid input, missing optional state, invocation
 from the documented working directories, path edge cases, deterministic repeat
 output, and nonzero failure propagation. Confirm that it leaves no mutation.
 
+When a canonical schema or accepted validator exists, implement its exact
+accepted and rejected value space. Do not narrow valid IDs, statuses, paths, or
+optional fields to a preferred style. Include a boundary fixture for every
+value class that a new checker could accidentally reject.
+
 ## Compact Feature and Documentation Garbage Safely
 
 For completed feature state:
