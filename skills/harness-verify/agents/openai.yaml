@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness Verify"
+  short_description: "Build fast, trustworthy repository verification"
+  default_prompt: "Use $harness-verify to create a fast affected verification interface from native repository checks."
